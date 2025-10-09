@@ -8,7 +8,7 @@ from langchain.schema import Document
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.chains import RetrievalQA
 import google.generativeai as genai
-from langchain.embeddings import GoogleGeminiEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 
 class ChatService:
@@ -23,12 +23,26 @@ class ChatService:
         documents = []
 
         try:
-            if os.path.exists("./data/resume.pdf"):
-                loader = PyPDFLoader("./data/resume.pdf")
+            # Try different possible paths for resume
+            possible_paths = [
+                "./data/resume.pdf",
+                "data/resume.pdf",
+                "../data/resume.pdf"
+            ]
+            
+            resume_path = None
+            for path in possible_paths:
+                if os.path.exists(path):
+                    resume_path = path
+                    break
+            
+            if resume_path:
+                print(f"Loading resume from: {resume_path}")
+                loader = PyPDFLoader(resume_path)
                 documents.extend(loader.load())
                 print(f"Successfully loaded resume PDF with {len(documents)} pages")
             else:
-                print("Resume PDF not found at ./data/resume.pdf")
+                print("Resume PDF not found. Using fallback data.")
                 fallback_data = """
                 Sandip Baste - AI/ML Developer
                 
@@ -68,16 +82,21 @@ class ChatService:
         return documents
 
     def setup_rag_system(self):
-        """Initialize RAG system with FAISS and Gemini embeddings"""
+        """Initialize RAG system with Gemini embeddings and FAISS"""
         try:
-            # Configure Gemini API
-            gemai_key = os.getenv("GEMINI_API_KEY")
-            genai.configure(api_key=gemai_key)
+            gemini_key = os.getenv("GEMINI_API_KEY")
+            if not gemini_key:
+                raise Exception("GEMINI_API_KEY not found in environment variables")
 
-            # Gemini embeddings
-            self.embeddings = GoogleGeminiEmbeddings(
+            print("Initializing RAG system with Gemini embeddings...")
+
+            # Configure Gemini API
+            genai.configure(api_key=gemini_key)
+
+            # Gemini embeddings with model text-embedding-004
+            self.embeddings = GoogleGenerativeAIEmbeddings(
                 model="text-embedding-004",
-                api_key=gemai_key
+                api_key=gemini_key
             )
 
             # Load and process documents
@@ -85,7 +104,7 @@ class ChatService:
             if not documents:
                 raise Exception("No documents loaded for RAG system")
 
-            # Split documents
+            # Split documents into chunks
             text_splitter = RecursiveCharacterTextSplitter(
                 chunk_size=1000,
                 chunk_overlap=200
@@ -95,13 +114,16 @@ class ChatService:
 
             # Create FAISS vector store
             self.vector_store = FAISS.from_documents(chunks, self.embeddings)
+
+            # Ensure vector store directory exists
+            os.makedirs("./vector_store", exist_ok=True)
             self.vector_store.save_local("./vector_store")
             print("FAISS vector store created and saved locally")
 
             # Initialize Gemini Chat LLM
             llm = ChatGoogleGenerativeAI(
                 model="gemini-2.5-flash",
-                google_api_key=gemai_key,
+                google_api_key=gemini_key,
                 temperature=0.1
             )
 
@@ -113,21 +135,25 @@ class ChatService:
                 return_source_documents=True
             )
 
-            print("RAG system initialized successfully with resume data")
+            print("RAG system initialized successfully with Gemini embeddings!")
 
         except Exception as e:
             print(f"Error setting up RAG system: {e}")
             try:
-                llm = ChatGoogleGenerativeAI(
-                    model="gemini-2.5-flash",
-                    google_api_key=os.getenv("GEMINI_API_KEY"),
-                    temperature=0.1
-                )
-                self.qa_chain = llm
-                print("Using fallback LLM without RAG")
+                gemini_key = os.getenv("GEMINI_API_KEY")
+                if gemini_key:
+                    llm = ChatGoogleGenerativeAI(
+                        model="gemini-2.5-flash",
+                        google_api_key=gemini_key,
+                        temperature=0.1
+                    )
+                    self.qa_chain = llm
+                    print("Using fallback LLM without RAG")
+                else:
+                    raise Exception("No Gemini API key available")
             except Exception as fallback_error:
                 print(f"Fallback also failed: {fallback_error}")
-                raise
+                self.qa_chain = None
 
     async def get_response(self, message: str, session_id: str = None) -> Dict[str, Any]:
         """Get response from RAG system using resume data"""
@@ -136,17 +162,17 @@ class ChatService:
 
         if not self.qa_chain:
             return {
-                "response": "I'm still initializing. Please try again in a moment.",
+                "response": "I'm still initializing or there was an error setting up the system. Please check if GEMINI_API_KEY is set in your .env file.",
                 "session_id": session_id,
                 "sources": ["System"]
             }
 
         try:
-            if hasattr(self.qa_chain, '__call__'):
-                # Fallback mode
-                result = await self.qa_chain.ainvoke(message)
+            if hasattr(self.qa_chain, 'invoke'):
+                # Fallback mode — direct LLM
+                result = self.qa_chain.invoke(message)
                 response_text = result.content if hasattr(result, 'content') else str(result)
-                sources = ["Resume (Fallback Mode)"]
+                sources = ["Resume (Direct LLM)"]
             else:
                 # Normal RAG mode
                 result = self.qa_chain({"query": message})
@@ -162,7 +188,7 @@ class ChatService:
         except Exception as e:
             print(f"Error getting response: {e}")
             return {
-                "response": "I apologize, but I'm having trouble accessing my knowledge base right now.",
+                "response": f"I apologize, but I'm having trouble processing your request. Error: {str(e)}",
                 "session_id": session_id,
                 "sources": ["Error"]
             }
