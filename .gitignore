@@ -1,0 +1,33 @@
+# Environment files
+.env
+.env.local
+
+# Python virtual environment
+venv/
+.venv/
+
+# Node.js dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+*.log
+
+# IDE settings
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# FastAPI cache
+*.db
+.cache/
