@@ -22,7 +22,7 @@ app.add_middleware(
 # Initialize chat service
 chat_service = ChatService()
 
-class ChatMessage(BaseModel):
+class ChatMessage(BaseModel): 
     message: str
     session_id: Optional[str] = None
 

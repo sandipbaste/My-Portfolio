@@ -1,36 +1,172 @@
-import React from 'react';
-import { Github, Linkedin, Mail, ExternalLink } from 'lucide-react';
+import React, { useState } from 'react';
+import { Github, Linkedin, Mail, ExternalLink, X } from 'lucide-react';
+import myphoto from '../assets/my photo 1.jpg';
 
 const Portfolio = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+
   const projects = [
     {
       id: 1,
-      title: "E-Commerce Platform",
-      description: "Full-stack e-commerce solution with React and Node.js featuring AI-powered recommendations and seamless checkout experience.",
-      tech: ["React", "Node.js", "MongoDB", "Stripe", "Tailwind CSS"],
-      link: "#"
+      title: "WhatsApp Chatbot",
+      description: "AI-powered WhatsApp chatbot with Python, Gemini API, PyAutoGUI, and Pyperclip, enabling automated, human-like, and context-aware conversations, enhancing user engagement by 95% through real-time, natural interactions with typing effects and loop-prevention.",
+      tech: ["Python", "LLM", "PyAutoGUI", "Pyperclip"],
+      link: "https://github.com/sandipbaste/WhatsApp-AI-Chatbot"
     },
     {
       id: 2,
-      title: "AI Chat Application",
-      description: "Real-time chat application with AI integration using Gemini API and WebSocket connections for instant messaging.",
-      tech: ["React", "FastAPI", "WebSockets", "Gemini AI", "Docker"],
-      link: "#"
+      title: "Nora - AI Voice Assistance",
+      description: "AI-powered voice assistant with Python, Gemini API, SpeechRecognition, pyttsx3, ReactJS, and Tailwind CSS, featuring context-aware dialogue, voice input via SpeechRecognition, TTS output with pyttsx3, and real-time features like web search, music playback, and news updates for multi-command task automation.",
+      tech: ["Python", "React", "LLM", "gTTS/pyttsx3", "Speech Recongnition", "Pygame", "NewsAPI", "Web-browser"],
+      link: "https://rescruitment-process-for-ev-power.netlify.app/"
     },
     {
       id: 3,
-      title: "Data Analytics Dashboard",
-      description: "Interactive dashboard for data visualization with real-time metrics and customizable reporting features.",
-      tech: ["React", "D3.js", "Python", "PostgreSQL", "FastAPI"],
-      link: "#"
+      title: "Vedio Insighter",
+      description: "Video insight system with Python, FFmpeg, Faster-Whisper, FastAPI, and Gemini API, extracting audio via FFmpeg, transcribing with Faster-Whisper, and processing queries through a FastAPI backend, enabling quick retrieval of context-specific insights from large video files, improving accessibility.",
+      tech: ["Python", "LangChain", "FastAPI", "LLM", "Chanlit", "FFmpeg", "Whisper"],
+      link: "https://github.com/sandipbaste/Video-Insight-Extractor-"
     }
   ];
 
   const skills = [
-    "UI/UX Design", "Figma", "Prototyping", "User Research", "Wireframing",
-    "React", "JavaScript", "TypeScript", "Tailwind CSS", "Python",
-    "FastAPI", "MongoDB", "PostgreSQL", "Docker", "AWS"
+    "Python", "LangChain", "LangGraph", "FastAPI", 
+    "RAG", "Agentic AI", "NLP", "ReactJS", "Tailwind CSS", "DLP", "Tools",
+     "MongoDB", "MySQL", "Docker", "AWS", "Git", "GitHub",
   ];
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Here you can handle form submission, e.g., send to backend
+    console.log('Form submitted:', formData);
+    // Reset form
+    setFormData({ name: '', email: '', message: '' });
+    // Close modal
+    setIsModalOpen(false);
+    // Show success message (you can add a toast notification here)
+    alert('Thank you for your message! I will get back to you soon.');
+  };
+
+  const ContactModal = () => {
+    if (!isModalOpen) return null;
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        {/* Backdrop with blur effect */}
+        <div 
+          className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300"
+          onClick={() => setIsModalOpen(false)}
+        ></div>
+        
+        {/* Modal Content */}
+        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto transform transition-all duration-300 scale-100">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <h3 className="text-2xl font-semibold text-gray-900">Get In Touch</h3>
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+            >
+              <X size={24} className="text-gray-500 hover:text-gray-700" />
+            </button>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                Your Name
+              </label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                placeholder="Enter your name"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                placeholder="Enter your email"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                Message
+              </label>
+              <textarea
+                id="message"
+                name="message"
+                value={formData.message}
+                onChange={handleInputChange}
+                required
+                rows="4"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 resize-none"
+                placeholder="Tell me about your project or just say hello!"
+              ></textarea>
+            </div>
+
+            <div className="flex space-x-3 pt-4">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="flex-1 px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-colors duration-200 shadow-lg"
+              >
+                Send Message
+              </button>
+            </div>
+          </form>
+
+          {/* Footer */}
+          <div className="px-6 py-4 bg-gray-50 rounded-b-2xl border-t border-gray-200">
+            <p className="text-sm text-gray-600 text-center">
+              Or email me directly at{" "}
+              <a 
+                href="mailto:sandipbaste999@gmail.com"
+                className="text-primary-600 hover:text-primary-700 font-medium"
+              >
+                sandipbaste999@gmail.com
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen">
@@ -38,7 +174,7 @@ const Portfolio = () => {
       <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-gray-200">
         <div className="container mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
-            <div className="text-2xl font-bold text-gray-800">Madelyn Torff</div>
+            <div className="text-2xl font-bold text-gray-800">Sandip Baste</div>
             <div className="hidden md:flex space-x-8">
               <a href="#about" className="text-gray-600 hover:text-primary-600 transition-colors font-medium">About</a>
               <a href="#projects" className="text-gray-600 hover:text-primary-600 transition-colors font-medium">Projects</a>
@@ -54,36 +190,44 @@ const Portfolio = () => {
         <div className="container mx-auto max-w-6xl">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="text-sm font-semibold text-primary-600 mb-4 uppercase tracking-wide">UI/UX DESIGNER & DEVELOPER</div>
+              <div className="text-sm font-semibold text-primary-600 mb-4 uppercase tracking-wide">AI/ML DEVELOPER</div>
               <h1 className="text-5xl md:text-6xl font-bold text-gray-900 leading-tight mb-6">
-                Hello, my name is <span className="text-primary-600">Madelyn Torff</span>
+                Hello, my name is <span className="text-primary-600">Sandip Baste</span>
               </h1>
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                I create beautiful, functional digital experiences that users love. 
-                With 5+ years in UI/UX design and full-stack development, I bridge the gap between design and technology.
+                I build agentic AI solutions like chatbots, voice bots, and AI agents that make interactions smarter and more natural.
               </p>
               <div className="flex flex-wrap gap-4">
-                <button className="bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors flex items-center gap-2 shadow-lg">
+                <a
+                  href="https://github.com/sandipbaste"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors flex items-center gap-2 shadow-lg"
+                >
                   View Projects <ExternalLink size={18} />
-                </button>
-                <button className="border border-primary-600 text-primary-600 px-8 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors flex items-center gap-2">
+                </a>
+
+                <a 
+                  href='https://www.linkedin.com/in/sandipbaste999'
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="border border-primary-600 text-primary-600 px-8 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors flex items-center gap-2"
+                >
                   <Linkedin size={18} /> LinkedIn
-                </button>
+                </a>
               </div>
             </div>
-            <div className="relative">
-              <div className="bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl p-1 shadow-2xl transform rotate-2 hover:rotate-0 transition-transform duration-300">
-                <div className="bg-white rounded-xl p-6 shadow-inner">
-                  <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="w-32 h-32 bg-primary-100 rounded-full mx-auto mb-4 flex items-center justify-center border-4 border-white shadow-lg">
-                        <span className="text-3xl font-bold text-primary-600">MT</span>
-                      </div>
-                      <p className="text-gray-500 font-medium">Madelyn Torff</p>
-                      <p className="text-sm text-gray-400">UI/UX Designer</p>
-                    </div>
-                  </div>
-                </div>
+            <div className="flex flex-col items-center text-center space-y-3">
+              <div className="relative w-64 h-64 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 p-[3px] group">
+                <img
+                  src={myphoto}
+                  alt="Sandip Baste"
+                  className="w-full h-full object-cover rounded-full transform group-hover:scale-105 transition-transform duration-700"
+                />
+              </div>
+              <div>
+                <h3 className="text-gray-800 font-semibold text-xl">Sandip Baste</h3>
+                <p className="text-gray-500 text-sm">AI/ML Developer</p>
               </div>
             </div>
           </div>
@@ -98,13 +242,10 @@ const Portfolio = () => {
             <div>
               <h3 className="text-2xl font-semibold text-gray-900 mb-4">My Journey</h3>
               <p className="text-gray-600 mb-6 leading-relaxed">
-                I'm a passionate UI/UX designer and full-stack developer with over 5 years of experience 
-                creating digital products that users love. My background in both design and development 
-                allows me to create seamless, efficient, and beautiful user experiences.
+                I'm a passionate AI/ML developer with a strong specialization in Generative AI and Large Language Models, honed through my Master's in Computer Science and hands-on internship experience. My background in building intelligent chatbots, voice assistants, and video insight systems allows me to create scalable, real-time AI solutions that enhance user engagement and efficiency.
               </p>
               <p className="text-gray-600 leading-relaxed">
-                I believe in the power of user-centered design and data-driven decisions. 
-                Every pixel and line of code serves a purpose in creating meaningful interactions.
+                I believe in the power of context-aware interactions and data-driven pipelines. Every embedding, retriever, and API integration serves a purpose in delivering accurate and meaningful AI experiences.
               </p>
             </div>
             <div>
@@ -112,19 +253,19 @@ const Portfolio = () => {
               <ul className="text-gray-600 space-y-3">
                 <li className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-primary-600 rounded-full"></div>
-                  User Interface Design & Prototyping
+                  AI-Powered Chatbot Development
                 </li>
                 <li className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-primary-600 rounded-full"></div>
-                  User Experience Research & Testing
+                  Voice Assistant Integration
                 </li>
                 <li className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-primary-600 rounded-full"></div>
-                  Full-Stack Web Development
+                  Real-Time API Backend Development
                 </li>
                 <li className="flex items-center gap-3">
                   <div className="w-2 h-2 bg-primary-600 rounded-full"></div>
-                  AI Integration & Chatbot Development
+                  Video Insight Extraction Systems
                 </li>
               </ul>
             </div>
@@ -175,9 +316,14 @@ const Portfolio = () => {
                     </span>
                   ))}
                 </div>
-                <button className="text-primary-600 font-semibold hover:text-primary-700 transition-colors flex items-center gap-2">
-                  View Case Study <ExternalLink size={16} />
-                </button>
+                <a
+                  href={project.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary-600 font-semibold hover:text-primary-700 transition-colors flex items-center gap-2"
+                >
+                  View Project <ExternalLink size={16} />
+                </a>
               </div>
             ))}
           </div>
@@ -193,15 +339,28 @@ const Portfolio = () => {
           </p>
           
           <div className="flex justify-center space-x-6 mb-12">
-            <a href="#" className="bg-gray-900 text-white p-4 rounded-xl hover:bg-gray-800 transition-colors shadow-lg transform hover:-translate-y-1 duration-300">
+            <a 
+              href="https://www.linkedin.com/in/sandipbaste999" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-gray-900 text-white p-4 rounded-xl hover:bg-gray-800 transition-colors shadow-lg transform hover:-translate-y-1 duration-300"
+            >
               <Linkedin size={24} />
             </a>
-            <a href="#" className="bg-gray-900 text-white p-4 rounded-xl hover:bg-gray-800 transition-colors shadow-lg transform hover:-translate-y-1 duration-300">
+            <a 
+              href="https://github.com/sandipbaste" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-gray-900 text-white p-4 rounded-xl hover:bg-gray-800 transition-colors shadow-lg transform hover:-translate-y-1 duration-300"
+            >
               <Github size={24} />
             </a>
-            <a href="#" className="bg-gray-900 text-white p-4 rounded-xl hover:bg-gray-800 transition-colors shadow-lg transform hover:-translate-y-1 duration-300">
+            <button
+              onClick={() => window.open("https://mail.google.com/mail/?view=cm&fs=1&to=sandipbaste999@gmail.com", "_blank")}
+              className="bg-gray-900 text-white p-4 rounded-xl hover:bg-gray-800 transition-colors shadow-lg transform hover:-translate-y-1 duration-300 flex items-center justify-center"
+            >
               <Mail size={24} />
-            </a>
+            </button>
           </div>
 
           <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md mx-auto">
@@ -209,7 +368,10 @@ const Portfolio = () => {
             <p className="text-gray-600 mb-6">
               Interested in working together? Let's talk about your project!
             </p>
-            <button className="bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors w-full">
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors w-full"
+            >
               Send Message
             </button>
           </div>
@@ -220,10 +382,13 @@ const Portfolio = () => {
       <footer className="bg-white border-t border-gray-200 py-8 px-6">
         <div className="container mx-auto text-center">
           <p className="text-gray-600">
-            © 2024 Madelyn Torff. All rights reserved. Built with React & FastAPI
+            © 2024 Sandip Baste. All rights reserved. Built with React & FastAPI
           </p>
         </div>
       </footer>
+
+      {/* Contact Form Modal */}
+      <ContactModal />
     </div>
   );
 };

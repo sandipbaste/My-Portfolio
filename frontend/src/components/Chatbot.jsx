@@ -115,7 +115,7 @@ const Chatbot = () => {
                   <Bot size={20} />
                 </div>
                 <div>
-                  <h3 className="font-semibold">Madelyn's Assistant</h3>
+                  <h3 className="font-semibold">Sandip's Assistant</h3>
                   <p className="text-primary-100 text-sm">Ask me about my experience!</p>
                 </div>
               </div>
@@ -133,16 +133,16 @@ const Chatbot = () => {
             {messages.length === 0 ? (
               <div className="text-center text-gray-500 mt-8">
                 <Bot size={48} className="mx-auto mb-4 text-primary-300" />
-                <p className="font-medium text-gray-700">Hello! I'm Madelyn's AI assistant.</p>
-                <p className="text-sm mt-2">Ask me about her experience, skills, projects, or anything from her resume!</p>
+                <p className="font-medium text-gray-700">Hello! I'm Sandip's AI assistant.</p>
+                <p className="text-sm mt-2">Ask me about her experience, skills, projects, or anything !</p>
                 <div className="mt-6 space-y-2 text-left">
                   <p className="text-xs text-gray-500">Try asking:</p>
                   <div className="space-y-1">
                     <button 
-                      onClick={() => setInputMessage("What is Madelyn's experience?")}
+                      onClick={() => setInputMessage("What is Sandip's experience?")}
                       className="text-xs bg-white border border-gray-200 rounded-lg px-3 py-2 hover:border-primary-300 transition-colors block w-full text-left"
                     >
-                      "What is Madelyn's experience?"
+                      "What is Sandip's experience?"
                     </button>
                     <button 
                       onClick={() => setInputMessage("Tell me about her skills")}
@@ -219,7 +219,7 @@ const Chatbot = () => {
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask about Madelyn's experience..."
+                placeholder="Ask about Sandip's experience..."
                 className="flex-1 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 disabled={isLoading}
               />
