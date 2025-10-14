@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
+import { MessageCircle, X, Send, Bot, User, Clock } from 'lucide-react';
 import { chatAPI } from '../services/api';
 
 const Chatbot = () => {
@@ -10,6 +10,15 @@ const Chatbot = () => {
   const messagesEndRef = useRef(null);
   const autoCloseTimerRef = useRef(null);
   const autoOpenTimerRef = useRef(null);
+
+  const getCurrentTime = () => {
+    const now = new Date();
+    return now.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true 
+    });
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -48,7 +57,11 @@ const Chatbot = () => {
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
-    const userMessage = { text: inputMessage, sender: 'user' };
+    const userMessage = { 
+      text: inputMessage, 
+      sender: 'user',
+      timestamp: getCurrentTime()
+    };
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
@@ -59,14 +72,15 @@ const Chatbot = () => {
       const botMessage = { 
         text: response.response, 
         sender: 'bot',
-        sources: response.sources
+        timestamp: getCurrentTime()
       };
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
       console.error('Chat error:', error);
       const errorMessage = { 
         text: "Sorry, I'm having trouble responding right now. Please make sure the backend server is running.", 
-        sender: 'bot' 
+        sender: 'bot',
+        timestamp: getCurrentTime()
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
@@ -134,7 +148,7 @@ const Chatbot = () => {
               <div className="text-center text-gray-500 mt-8">
                 <Bot size={48} className="mx-auto mb-4 text-primary-300" />
                 <p className="font-medium text-gray-700">Hello! I'm Sandip's AI assistant.</p>
-                <p className="text-sm mt-2">Ask me about her experience, skills, projects, or anything !</p>
+                <p className="text-sm mt-2">Ask me about his experience, skills, projects, or anything!</p>
                 <div className="mt-6 space-y-2 text-left">
                   <p className="text-xs text-gray-500">Try asking:</p>
                   <div className="space-y-1">
@@ -145,16 +159,16 @@ const Chatbot = () => {
                       "What is Sandip's experience?"
                     </button>
                     <button 
-                      onClick={() => setInputMessage("Tell me about her skills")}
+                      onClick={() => setInputMessage("Tell me about his skills")}
                       className="text-xs bg-white border border-gray-200 rounded-lg px-3 py-2 hover:border-primary-300 transition-colors block w-full text-left"
                     >
-                      "Tell me about her skills"
+                      "Tell me about his skills"
                     </button>
                     <button 
-                      onClick={() => setInputMessage("What projects has she worked on?")}
+                      onClick={() => setInputMessage("What projects has he worked on?")}
                       className="text-xs bg-white border border-gray-200 rounded-lg px-3 py-2 hover:border-primary-300 transition-colors block w-full text-left"
                     >
-                      "What projects has she worked on?"
+                      "What projects has he worked on?"
                     </button>
                   </div>
                 </div>
@@ -172,24 +186,23 @@ const Chatbot = () => {
                         : 'bg-white border border-gray-200 rounded-bl-none shadow-sm'
                     }`}
                   >
-                    <div className="flex items-center gap-2 mb-1">
-                      {message.sender === 'bot' ? (
-                        <Bot size={16} className="text-primary-600" />
-                      ) : (
-                        <User size={16} className="text-white" />
-                      )}
-                      <span className="text-xs font-medium opacity-75">
-                        {message.sender === 'bot' ? 'Assistant' : 'You'}
-                      </span>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        {message.sender === 'bot' ? (
+                          <Bot size={16} className="text-primary-600" />
+                        ) : (
+                          <User size={16} className="text-white" />
+                        )}
+                        <span className={`text-xs font-medium ${message.sender === 'bot' ? 'text-primary-600' : 'text-white'}`}>
+                          {message.sender === 'bot' ? 'Assistant' : 'You'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 text-xs opacity-75">
+                        <Clock size={12} />
+                        <span>{message.timestamp}</span>
+                      </div>
                     </div>
                     <p className="whitespace-pre-wrap">{message.text}</p>
-                    {message.sources && message.sources.length > 0 && (
-                      <div className="mt-2 pt-2 border-t border-gray-200">
-                        <p className="text-xs text-gray-500">
-                          Sources: {message.sources.join(', ')}
-                        </p>
-                      </div>
-                    )}
                   </div>
                 </div>
               ))
