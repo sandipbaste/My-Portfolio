@@ -116,7 +116,7 @@ const Chatbot = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold">Sandip's Assistant</h3>
-                  <p className="text-primary-100 text-sm">Ask me about my experience!</p>
+                  <p className="text-primary-100 text-sm">Ask me about MySelf!</p>
                 </div>
               </div>
               <button
