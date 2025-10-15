@@ -117,9 +117,8 @@ class ChatService:
             # Setup Google Gemini LLM with correct model name
             print("🤖 Setting up Gemini model...")
             try:
-                # Try different model names
                 self.llm = ChatGoogleGenerativeAI(
-                    model="gemini-2.5-flash",  # Use gemini-2.5-flash which is widely available
+                    model="gemini-2.5-flash",
                     temperature=0.3,
                     google_api_key=os.getenv("GOOGLE_API_KEY")
                 )
@@ -127,13 +126,12 @@ class ChatService:
             except Exception as e:
                 print(f"❌ Gemini Pro not available: {e}")
                 try:
-                    # Fallback to gemini-2.5-flash
                     self.llm = ChatGoogleGenerativeAI(
                         model="gemini-2.5-flash",
                         temperature=0.3,
                         google_api_key=os.getenv("GOOGLE_API_KEY")
                     )
-                    print("✅ Gemini 2.5 flash model ready")
+                    print("✅ Gemini Pro model ready (with models/ prefix)")
                 except Exception as e2:
                     print(f"❌ All Gemini models failed: {e2}")
                     self.llm = None
@@ -149,12 +147,16 @@ class ChatService:
             except Exception as e:
                 print(f"❌ Error setting up embeddings: {e}")
                 # Fallback to local embeddings if Google embeddings fail
-                from langchain_huggingface import HuggingFaceEmbeddings
-                embeddings = HuggingFaceEmbeddings(
-                    model_name="sentence-transformers/all-MiniLM-L6-v2",
-                    model_kwargs={'device': 'cpu'}
-                )
-                print("✅ Using fallback local embeddings")
+                try:
+                    from langchain.embeddings import HuggingFaceEmbeddings
+                    embeddings = HuggingFaceEmbeddings(
+                        model_name="sentence-transformers/all-MiniLM-L6-v2",
+                        model_kwargs={'device': 'cpu'}
+                    )
+                    print("✅ Using fallback local embeddings")
+                except Exception as e2:
+                    print(f"❌ Fallback embeddings also failed: {e2}")
+                    return
 
             # Load and process documents
             documents = self.load_documents()

@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Github, Linkedin, MessageCircle, Instagram, Facebook, Mail, ExternalLink, X, Code, Briefcase, Phone, BookOpen, User, Home, Send, MapPin, Menu } from 'lucide-react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import myphoto from '../assets/my photo 1.jpg';
+import { contactAPI } from '../services/api';
 
 // Fixed ContactModal component - moved outside to prevent re-renders
-const ContactModal = ({ isOpen, onClose, formData, onInputChange, onSubmit }) => {
+const ContactModal = ({ isOpen, onClose, formData, onInputChange, onSubmit, isLoading }) => {
   if (!isOpen) return null;
 
   return (
@@ -30,11 +33,12 @@ const ContactModal = ({ isOpen, onClose, formData, onInputChange, onSubmit }) =>
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
           className="relative text-white rounded-2xl shadow-2xl w-full max-w-sm mx-auto border border-white"
         >
-          <div className="flex items-center justify-between bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-2xl p-4 border-b border-gray-700">
+          <div className="flex items-center justify-between bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-2xl p-4 border-b border-gray-700">
             <h3 className="text-lg font-semibold">Get In Touch</h3>
             <button
               onClick={onClose}
-              className="p-1 hover:bg-red-700 rounded-full transition-colors duration-200"
+              disabled={isLoading}
+              className="p-1 hover:bg-red-700 rounded-full transition-colors duration-200 disabled:opacity-50"
             >
               <X size={18} className="text-gray-300 hover:text-white" />
             </button>
@@ -52,7 +56,8 @@ const ContactModal = ({ isOpen, onClose, formData, onInputChange, onSubmit }) =>
                 value={formData.name}
                 onChange={onInputChange}
                 required
-                className="w-full px-3 py-2 bg-transparent text-white border border-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 placeholder-gray-200 text-sm"
+                disabled={isLoading}
+                className="w-full px-3 py-2 bg-transparent text-white border border-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-200 text-sm disabled:opacity-50"
                 placeholder="Enter your name"
               />
             </div>
@@ -68,7 +73,8 @@ const ContactModal = ({ isOpen, onClose, formData, onInputChange, onSubmit }) =>
                 value={formData.email}
                 onChange={onInputChange}
                 required
-                className="w-full px-3 py-2 bg-transparent text-white border border-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 placeholder-gray-200 text-sm"
+                disabled={isLoading}
+                className="w-full px-3 py-2 bg-transparent text-white border border-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-200 text-sm disabled:opacity-50"
                 placeholder="Enter your email"
               />
             </div>
@@ -84,7 +90,8 @@ const ContactModal = ({ isOpen, onClose, formData, onInputChange, onSubmit }) =>
                 onChange={onInputChange}
                 required
                 rows="3"
-                className="w-full px-3 py-2 bg-transparent text-white border border-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 placeholder-gray-200 resize-none text-sm"
+                disabled={isLoading}
+                className="w-full px-3 py-2 bg-transparent text-white border border-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-200 resize-none text-sm disabled:opacity-50"
                 placeholder="Tell me about your project..."
               ></textarea>
             </div>
@@ -93,20 +100,32 @@ const ContactModal = ({ isOpen, onClose, formData, onInputChange, onSubmit }) =>
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-3 py-2 border border-gray-600 text-gray-300 rounded-lg font-semibold hover:bg-red-600 transition-colors duration-200 text-sm"
+                disabled={isLoading}
+                className="flex-1 px-3 py-2 border border-gray-600 text-gray-300 rounded-lg font-semibold hover:bg-red-600 transition-colors duration-200 text-sm disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200 shadow-lg text-sm"
+                disabled={isLoading}
+                className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200 shadow-lg text-sm disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                Send
+                {isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send size={16} />
+                    Send
+                  </>
+                )}
               </button>
             </div>
           </form>
 
-          <div className="px-4 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-b-2xl border-t border-gray-700">
+          <div className="px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-b-2xl border-t border-gray-700">
             <p className="text-xs text-gray-300 text-center">
               Or email me directly at{" "}
               <a 
@@ -129,6 +148,7 @@ const Portfolio = () => {
   const [activeSection, setActiveSection] = useState('home');
   const [typedName, setTypedName] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -223,12 +243,44 @@ const Portfolio = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    setFormData({ name: '', email: '', message: '' });
-    setIsModalOpen(false);
-    alert('Thank you for your message! I will get back to you soon.');
+    setIsLoading(true);
+    
+    try {
+      const response = await contactAPI.submitForm(formData);
+      
+      console.log('Form submitted successfully:', response);
+      setFormData({ name: '', email: '', message: '' });
+      setIsModalOpen(false);
+      
+      // Success toast notification
+      toast.success('Thank you for your message! I will get back to you soon. You should receive an auto-reply email shortly.', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "dark",
+      });
+      
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      
+      // Error toast notification
+      toast.error('There was an error submitting your message. Please try again or email me directly at sandipbaste999@gmail.com', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "dark",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const scrollToSection = (sectionId) => {
@@ -276,6 +328,20 @@ const Portfolio = () => {
 
   return (
     <div className="min-h-screen bg-black text-white">
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
+
       {/* Background Pattern */}
       <div 
         className="fixed inset-0 opacity-10 z-0"
@@ -497,7 +563,7 @@ const Portfolio = () => {
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 text-yellow-400">My Journey</h3>
+                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 text-blue-600">My Journey</h3>
                 <p className="mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base text-black">
                   I'm a passionate AI/ML developer with a strong specialization in Generative AI and Large Language Models, honed through my Master's in Computer Science and hands-on internship experience. My background in building intelligent chatbots, voice assistants, and video insight systems allows me to create scalable, real-time AI solutions that enhance user engagement and efficiency.
                 </p>
@@ -510,7 +576,7 @@ const Portfolio = () => {
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
               >
-                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 text-yellow-400">What I Do</h3>
+                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 text-blue-600">What I Do</h3>
                 <ul className="text-black space-y-2 sm:space-y-3 text-sm sm:text-base">
                   <li className="flex items-center gap-3">
                     <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></div>
@@ -670,7 +736,7 @@ const Portfolio = () => {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg sm:text-xl text-yellow-400 text-center mb-8 sm:mb-12 max-w-2xl mx-auto"
+              className="text-lg sm:text-xl text-blue-600 text-center mb-8 sm:mb-12 max-w-2xl mx-auto"
             >
               Ready to bring your next AI project to life? Let's create something amazing together.
             </motion.p>
@@ -790,7 +856,8 @@ const Portfolio = () => {
                         value={formData.name}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-black placeholder-gray-400 text-sm sm:text-base"
+                        disabled={isLoading}
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-black placeholder-gray-400 text-sm sm:text-base disabled:opacity-50"
                         placeholder="Enter your name"
                       />
                     </div>
@@ -805,7 +872,8 @@ const Portfolio = () => {
                         value={formData.email}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-black placeholder-gray-400 text-sm sm:text-base"
+                        disabled={isLoading}
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-black placeholder-gray-400 text-sm sm:text-base disabled:opacity-50"
                         placeholder="Enter your email"
                       />
                     </div>
@@ -821,18 +889,29 @@ const Portfolio = () => {
                       onChange={handleInputChange}
                       required
                       rows="4"
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-black placeholder-gray-400 resize-none text-sm sm:text-base"
+                      disabled={isLoading}
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-black placeholder-gray-400 resize-none text-sm sm:text-base disabled:opacity-50"
                       placeholder="Tell me about your project or just say hello!"
                     ></textarea>
                   </div>
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: isLoading ? 1 : 1.02 }}
+                    whileTap={{ scale: isLoading ? 1 : 0.98 }}
                     type="submit"
-                    className="w-full bg-blue-600 text-white py-3 sm:py-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
+                    disabled={isLoading}
+                    className="w-full bg-blue-600 text-white py-3 sm:py-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base disabled:opacity-50"
                   >
-                    <Send size={18} />
-                    Send Message
+                    {isLoading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send size={18} />
+                        Send Message
+                      </>
+                    )}
                   </motion.button>
                 </form>
               </motion.div>
@@ -898,6 +977,7 @@ const Portfolio = () => {
         formData={formData}
         onInputChange={handleInputChange}
         onSubmit={handleSubmit}
+        isLoading={isLoading}
       />
     </div>
   );
