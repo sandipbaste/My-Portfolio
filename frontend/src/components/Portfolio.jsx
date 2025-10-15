@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Github, Linkedin, Mail, ExternalLink, X, Code, Briefcase, Phone, BookOpen, User, Home, Send, MapPin, Menu } from 'lucide-react';
+import { Github, Linkedin, MessageCircle , Instagram, Facebook, Mail, ExternalLink, X, Code, Briefcase, Phone, BookOpen, User, Home, Send, MapPin, Menu } from 'lucide-react';
 import myphoto from '../assets/my photo 1.jpg';
 
 const Portfolio = () => {
@@ -144,7 +144,7 @@ const Portfolio = () => {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="relative bg-[#2A2A2E] text-white rounded-2xl shadow-2xl w-full max-w-sm mx-auto border border-gray-700"
+            className="relative bg-black text-white rounded-2xl shadow-2xl w-full max-w-sm mx-auto border border-gray-700"
           >
             <div className="flex items-center justify-between p-4 border-b border-gray-700">
               <h3 className="text-lg font-semibold">Get In Touch</h3>
@@ -241,16 +241,16 @@ const Portfolio = () => {
 
   const SkillBubble = ({ skill, index }) => {
     const colors = [
-      'bg-blue-500/20 text-blue-300 border-blue-500/30',
-      'bg-purple-500/20 text-purple-300 border-purple-500/30',
-      'bg-green-500/20 text-green-300 border-green-500/30',
-      'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
-      'bg-red-500/20 text-red-300 border-red-500/30',
-      'bg-pink-500/20 text-pink-300 border-pink-500/30',
-      'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-      'bg-teal-500/20 text-teal-300 border-teal-500/30',
-      'bg-orange-500/20 text-orange-300 border-orange-500/30',
-      'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
+      'bg-blue-300 text-blue-800 border-blue-400',
+      'bg-purple-300 text-purple-800 border-purple-400',
+      'bg-green-300 text-green-800 border-green-400',
+      'bg-yellow-300 text-yellow-800 border-yellow-400',
+      'bg-red-300 text-red-800 border-red-400',
+      'bg-pink-300 text-pink-800 border-pink-400',
+      'bg-indigo-300 text-indigo-800 border-indigo-400',
+      'bg-teal-300 text-teal-800 border-teal-400',
+      'bg-orange-300 text-orange-800 border-orange-400',
+      'bg-cyan-300 text-cyan-800 border-cyan-400'
     ];
 
     const colorClass = colors[index % colors.length];
@@ -274,7 +274,7 @@ const Portfolio = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#2A2A2E] text-white">
+    <div className="min-h-screen bg-black text-white">
       {/* Background Pattern */}
       <div 
         className="fixed inset-0 opacity-10 z-0"
@@ -288,7 +288,7 @@ const Portfolio = () => {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-          isScrolled ? 'bg-[#2A2A2E]/95 backdrop-blur-md border-b border-gray-700' : 'bg-transparent'
+          isScrolled ? 'bg-black/95 backdrop-blur-md border-b border-gray-700' : 'bg-transparent'
         }`}
       >
         <div className="container mx-auto px-4 sm:px-6 py-3">
@@ -480,27 +480,27 @@ const Portfolio = () => {
         </section>
 
         {/* About Section */}
-        <section id="about" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-gray-800/50">
+        <section id="about" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-white">
           <div className="container mx-auto max-w-4xl">
             <motion.h2 
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 sm:mb-12"
+              className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 sm:mb-12 text-black"
             >
               About Me
             </motion.h2>
-            <div className="grid md:grid-cols-2 gap-8 sm:gap-12">
+            <div className="grid md:grid-cols-2 gap-8 sm:gap-12 text-black">
               <motion.div
                 initial={{ opacity: 0, x: -30 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">My Journey</h3>
-                <p className="text-gray-300 mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base">
+                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 text-yellow-400">My Journey</h3>
+                <p className="mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base text-black">
                   I'm a passionate AI/ML developer with a strong specialization in Generative AI and Large Language Models, honed through my Master's in Computer Science and hands-on internship experience. My background in building intelligent chatbots, voice assistants, and video insight systems allows me to create scalable, real-time AI solutions that enhance user engagement and efficiency.
                 </p>
-                <p className="text-gray-300 leading-relaxed text-sm sm:text-base">
+                <p className="leading-relaxed text-sm sm:text-base text-black">
                   I believe in the power of context-aware interactions and data-driven pipelines. Every embedding, retriever, and API integration serves a purpose in delivering accurate and meaningful AI experiences.
                 </p>
               </motion.div>
@@ -509,8 +509,8 @@ const Portfolio = () => {
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
               >
-                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">What I Do</h3>
-                <ul className="text-gray-300 space-y-2 sm:space-y-3 text-sm sm:text-base">
+                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 text-yellow-400">What I Do</h3>
+                <ul className="text-black space-y-2 sm:space-y-3 text-sm sm:text-base">
                   <li className="flex items-center gap-3">
                     <div className="w-2 h-2 bg-primary-600 rounded-full flex-shrink-0"></div>
                     AI-Powered Chatbot Development
@@ -534,7 +534,7 @@ const Portfolio = () => {
         </section>
 
         {/* Education Section */}
-        <section id="education" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-[#2A2A2E]">
+        <section id="education" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-black">
           <div className="container mx-auto max-w-4xl">
             <motion.h2 
               initial={{ opacity: 0, y: 30 }}
@@ -571,7 +571,7 @@ const Portfolio = () => {
         </section>
 
         {/* Skills Section */}
-        <section id="skills" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-gray-800/50">
+        <section id="skills" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-white text-black">
           <div className="container mx-auto max-w-6xl">
             <motion.h2 
               initial={{ opacity: 0, y: 30 }}
@@ -585,7 +585,7 @@ const Portfolio = () => {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg sm:text-xl text-gray-300 text-center mb-8 sm:mb-12 max-w-2xl mx-auto"
+              className="text-lg sm:text-xl text-center mb-8 sm:mb-12 max-w-2xl mx-auto text-black"
             >
               Technologies I use to bring ideas to life
             </motion.p>
@@ -598,7 +598,7 @@ const Portfolio = () => {
         </section>
 
         {/* Projects Section */}
-        <section id="projects" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-[#2A2A2E]">
+        <section id="projects" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-black">
           <div className="container mx-auto max-w-6xl">
             <motion.h2 
               initial={{ opacity: 0, y: 30 }}
@@ -612,7 +612,7 @@ const Portfolio = () => {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg sm:text-xl text-gray-300 text-center mb-8 sm:mb-12 max-w-2xl mx-auto"
+              className="text-lg sm:text-xl text-yellow-400 text-center mb-8 sm:mb-12 max-w-2xl mx-auto"
             >
               Here are some of my recent projects that showcase my skills and experience.
             </motion.p>
@@ -625,13 +625,13 @@ const Portfolio = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: index * 0.2 }}
                   whileHover={{ y: -5 }}
-                  className="bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-700 hover:shadow-xl transition-all duration-300 group"
+                  className="bg-white text-black rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-700 hover:shadow-xl transition-all duration-300 group"
                 >
                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-600/20 rounded-xl mb-3 sm:mb-4 flex items-center justify-center group-hover:bg-primary-600/30 transition-colors text-xl sm:text-2xl">
                     {project.icon}
                   </div>
                   <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3">{project.title}</h3>
-                  <p className="text-gray-300 mb-3 sm:mb-4 leading-relaxed text-sm sm:text-base">{project.description}</p>
+                  <p className=" mb-3 sm:mb-4 leading-relaxed text-sm sm:text-base">{project.description}</p>
                   <div className="flex flex-wrap gap-1 sm:gap-2 mb-3 sm:mb-4">
                     {project.tech.map((tech, techIndex) => (
                       <span key={techIndex} className="bg-primary-600/20 text-primary-400 px-2 py-1 rounded-full text-xs sm:text-sm font-medium">
@@ -655,13 +655,13 @@ const Portfolio = () => {
         </section>
 
         {/* Contact Section */}
-        <section id="contact" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-gradient-to-br from-gray-800 to-[#2A2A2E]">
+        <section id="contact" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-white ">
           <div className="container mx-auto max-w-6xl">
             <motion.h2 
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-4"
+              className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-4 text-black"
             >
               Let's Work Together
             </motion.h2>
@@ -669,7 +669,7 @@ const Portfolio = () => {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg sm:text-xl text-gray-300 text-center mb-8 sm:mb-12 max-w-2xl mx-auto"
+              className="text-lg sm:text-xl text-yellow-400 text-center mb-8 sm:mb-12 max-w-2xl mx-auto"
             >
               Ready to bring your next AI project to life? Let's create something amazing together.
             </motion.p>
@@ -682,19 +682,19 @@ const Portfolio = () => {
                 transition={{ duration: 0.6 }}
                 className="space-y-6"
               >
-                <h3 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">Get In Touch</h3>
+                <h3 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-black text-center">Get In Touch</h3>
                 
                 <div className="space-y-4">
                   <motion.div 
                     whileHover={{ x: 10 }}
-                    className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 bg-gray-800/50 rounded-xl border border-gray-700 hover:border-primary-500 transition-all duration-300"
+                    className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 bg-white rounded-xl border border-gray-700 hover:border-primary-500 transition-all duration-300"
                   >
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Mail size={20} className="text-primary-400" />
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-black rounded-xl hover:bg-primary-600 hover:text-white hover:border-primary-600 transition-colors shadow-lg flex items-center justify-center flex-shrink-0">
+                       <a href="mailto:sandipbaste999@gmail.com"><Mail size={20} className="text-primary-400" /></a>
                     </div>
                     <div>
-                      <p className="text-gray-400 text-xs sm:text-sm">Email</p>
-                      <a href="mailto:sandipbaste999@gmail.com" className="text-white hover:text-primary-400 transition-colors text-sm sm:text-base">
+                      <p className="text-black font-bold text-xs sm:text-sm">Email</p>
+                      <a href="mailto:sandipbaste999@gmail.com" className="text-gray-700 hover:text-primary-400 transition-colors text-sm sm:text-base">
                         sandipbaste999@gmail.com
                       </a>
                     </div>
@@ -702,26 +702,26 @@ const Portfolio = () => {
 
                   <motion.div 
                     whileHover={{ x: 10 }}
-                    className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 bg-gray-800/50 rounded-xl border border-gray-700 hover:border-primary-500 transition-all duration-300"
+                    className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 bg-white rounded-xl border border-gray-700 hover:border-primary-500  transition-all duration-300"
                   >
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-black rounded-xl hover:bg-primary-600 hover:text-white hover:border-primary-600 transition-colors shadow-lg flex items-center justify-center flex-shrink-0">
                       <MapPin size={20} className="text-primary-400" />
                     </div>
                     <div>
-                      <p className="text-gray-400 text-xs sm:text-sm">Location</p>
-                      <p className="text-white text-sm sm:text-base">Nashik, Maharashtra, India</p>
+                      <p className="text-black font-bold text-xs sm:text-sm">Location</p>
+                      <p className="text-gray-700 text-sm sm:text-base">Nashik, Maharashtra, India</p>
                     </div>
                   </motion.div>
                 </div>
 
-                <div className="flex space-x-3 sm:space-x-4 pt-4 sm:pt-6">
+                <div className="flex space-x-3 sm:space-x-4 pt-4 sm:pt-6 justify-center">
                   <motion.a 
                     whileHover={{ scale: 1.1, y: -5 }}
                     whileTap={{ scale: 0.95 }}
                     href="https://www.linkedin.com/in/sandipbaste999" 
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-700 text-white rounded-xl hover:bg-primary-600 transition-colors shadow-lg flex items-center justify-center"
+                    className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-black rounded-xl hover:bg-primary-600 hover:text-white hover:border-primary-600 transition-colors shadow-lg flex items-center justify-center"
                   >
                     <Linkedin size={20} />
                   </motion.a>
@@ -731,9 +731,39 @@ const Portfolio = () => {
                     href="https://github.com/sandipbaste" 
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-700 text-white rounded-xl hover:bg-primary-600 transition-colors shadow-lg flex items-center justify-center"
+                    className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-black rounded-xl hover:bg-primary-600 hover:text-white hover:border-primary-600 transition-colors shadow-lg flex items-center justify-center"
                   >
                     <Github size={20} />
+                  </motion.a>
+                  <motion.a 
+                    whileHover={{ scale: 1.1, y: -5 }}
+                    whileTap={{ scale: 0.95 }}
+                    href="https://wa.me/919767952471"  // Direct WhatsApp chat link
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-black rounded-xl hover:bg-primary-600 hover:text-white hover:border-primary-600] transition-colors shadow-lg flex items-center justify-center"
+                  >
+                    <MessageCircle size={20} />
+                  </motion.a>
+                 <motion.a 
+                    whileHover={{ scale: 1.1, y: -5 }}
+                    whileTap={{ scale: 0.95 }}
+                    href="https://instagram.com/your_instagram_handle" 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-black rounded-xl hover:bg-primary-600 hover:text-white hover:border-primary-600  transition-colors shadow-lg flex items-center justify-center"
+                  >
+                    <Instagram size={20} />
+                  </motion.a>
+                  <motion.a 
+                    whileHover={{ scale: 1.1, y: -5 }}
+                    whileTap={{ scale: 0.95 }}
+                    href="https://facebook.com/your_facebook_profile" 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-black rounded-xl hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2] transition-colors shadow-lg flex items-center justify-center"
+                  >
+                    <Facebook size={20} />
                   </motion.a>
                 </div>
               </motion.div>
@@ -743,13 +773,13 @@ const Portfolio = () => {
                 initial={{ opacity: 0, x: 50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
-                className="bg-gray-800 rounded-2xl p-4 sm:p-6 md:p-8 shadow-xl border border-gray-700"
+                className="bg-white rounded-2xl p-4 sm:p-6 md:p-8 shadow-xl border border-gray-700"
               >
-                <h3 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">Send me a message</h3>
+                <h3 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-black">Send me a message</h3>
                 <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                   <div className="grid md:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                         Your Name
                       </label>
                       <input
@@ -759,12 +789,12 @@ const Portfolio = () => {
                         value={formData.name}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-white placeholder-gray-400 text-sm sm:text-base"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3  border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-black placeholder-gray-400 text-sm sm:text-base"
                         placeholder="Enter your name"
                       />
                     </div>
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                         Email Address
                       </label>
                       <input
@@ -774,13 +804,13 @@ const Portfolio = () => {
                         value={formData.email}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-white placeholder-gray-400 text-sm sm:text-base"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3  border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-black placeholder-gray-400 text-sm sm:text-base"
                         placeholder="Enter your email"
                       />
                     </div>
                   </div>
                   <div>
-                    <label htmlFor="message" className="block text-sm font-medium text-gray-300 mb-2">
+                    <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
                       Message
                     </label>
                     <textarea
@@ -790,7 +820,7 @@ const Portfolio = () => {
                       onChange={handleInputChange}
                       required
                       rows="4"
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-white placeholder-gray-400 resize-none text-sm sm:text-base"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-black placeholder-gray-400 resize-none text-sm sm:text-base"
                       placeholder="Tell me about your project or just say hello!"
                     ></textarea>
                   </div>
@@ -810,14 +840,14 @@ const Portfolio = () => {
         </section>
 
         {/* Footer */}
-        <footer className="bg-[#2A2A2E] border-t border-gray-700 py-8 sm:py-12 px-4 sm:px-6">
+        <footer className="bg-black border-t border-gray-700 py-8 sm:py-12 px-4 sm:px-6">
           <div className="container mx-auto">
             <div className="grid md:grid-cols-3 gap-6 sm:gap-8 items-center">
               <div className="text-center md:text-left">
                 <h3 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent mb-3 sm:mb-4">
                   Sandip Baste
                 </h3>
-                <p className="text-gray-400 text-sm sm:text-base">
+                <p className="text-white text-sm sm:text-base">
                   AI/ML Developer specializing in Generative AI and LLM solutions.
                 </p>
               </div>
@@ -853,9 +883,6 @@ const Portfolio = () => {
               <div className="text-center md:text-right">
                 <p className="text-gray-400 text-sm sm:text-base">
                   © 2024 Sandip Baste. All rights reserved.
-                </p>
-                <p className="text-gray-500 text-xs sm:text-sm mt-1 sm:mt-2">
-                  Built with React & FastAPI
                 </p>
               </div>
             </div>

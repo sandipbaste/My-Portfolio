@@ -159,7 +159,7 @@ const Chatbot = () => {
               stiffness: 300, 
               damping: 30 
             }}
-            className="fixed bottom-20 right-6 w-96 h-[600px] bg-[#2A2A2E] text-white rounded-2xl shadow-2xl border border-gray-700 flex flex-col z-[60] overflow-hidden" // Increased z-index to 60
+            className="fixed bottom-20 right-6 w-96 h-[600px]  text-white rounded-2xl shadow-2xl border border-gray-700 flex flex-col z-[60] overflow-hidden" // Increased z-index to 60
             style={{ top: '80px' }} // Added top positioning to avoid navbar
           >
             {/* Header */}
@@ -236,7 +236,7 @@ const Chatbot = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.4 }}
-                    className="text-sm text-gray-300"
+                    className="text-sm text-gray-200"
                   >
                     Ask me about his experience, skills, projects, or anything!
                   </motion.p>
@@ -246,7 +246,7 @@ const Chatbot = () => {
                     transition={{ delay: 0.5 }}
                     className="mt-6 space-y-2 text-left"
                   >
-                    <p className="text-xs text-gray-400 mb-3">Try asking:</p>
+                    <p className="text-xs text-white mb-3">Try asking:</p>
                     <div className="space-y-2">
                       {quickQuestions.map((question, index) => (
                         <motion.button
@@ -257,7 +257,7 @@ const Chatbot = () => {
                           whileHover={{ x: 5, scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={() => setInputMessage(question)}
-                          className="text-xs bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 hover:border-primary-500 transition-colors block w-full text-left hover:bg-gray-600"
+                          className="text-xs text-black bg-white border border-black rounded-lg px-3 py-2 hover:border-primary-500 hover:bg-primary-500 hover:text-white transition-colors block w-full text-left"
                         >
                           "{question}"
                         </motion.button>
@@ -283,7 +283,7 @@ const Chatbot = () => {
                       className={`max-w-[80%] rounded-2xl p-4 ${
                         message.sender === 'user'
                           ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-br-none shadow-lg'
-                          : 'bg-gray-700 border border-gray-600 rounded-bl-none shadow-sm'
+                          : 'bg-white border-gray-600  rounded-bl-none shadow-sm text-black'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
@@ -302,7 +302,7 @@ const Chatbot = () => {
                             {message.sender === 'bot' ? 'Assistant' : 'You'}
                           </span>
                         </div>
-                        <div className="flex items-center gap-1 text-xs text-gray-300">
+                        <div className="flex items-center gap-1 text-xs text-gray-400">
                           <Clock size={12} />
                           <span>{message.timestamp}</span>
                         </div>
@@ -380,7 +380,7 @@ const Chatbot = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="p-4 border-t border-gray-700 bg-[#2A2A2E] rounded-b-2xl"
+              className="p-4 border-t border-gray-700 bg-gradient-to-r from-primary-600 to-primary-700 rounded-b-2xl"
             >
               <div className="flex space-x-2">
                 <motion.input
@@ -390,7 +390,7 @@ const Chatbot = () => {
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Ask about Sandip's experience..."
-                  className="flex-1 bg-gray-700 border border-gray-600 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                  className="flex-1 text-black rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 placeholder-gray-400 "
                   disabled={isLoading}
                 />
                 <motion.button
@@ -400,7 +400,7 @@ const Chatbot = () => {
                   whileTap={{ scale: inputMessage.trim() && !isLoading ? 0.95 : 1 }}
                   onClick={sendMessage}
                   disabled={isLoading || !inputMessage.trim()}
-                  className="bg-gradient-to-r from-primary-600 to-primary-700 text-white p-3 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg hover:from-primary-700 hover:to-primary-800"
+                  className="bg-white text-black p-3 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg hover:bg-black hover:text-white"
                 >
                   <Send size={20} />
                 </motion.button>
