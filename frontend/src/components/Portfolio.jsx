@@ -1,7 +1,127 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Github, Linkedin, MessageCircle , Instagram, Facebook, Mail, ExternalLink, X, Code, Briefcase, Phone, BookOpen, User, Home, Send, MapPin, Menu } from 'lucide-react';
+import { Github, Linkedin, MessageCircle, Instagram, Facebook, Mail, ExternalLink, X, Code, Briefcase, Phone, BookOpen, User, Home, Send, MapPin, Menu } from 'lucide-react';
 import myphoto from '../assets/my photo 1.jpg';
+
+// Fixed ContactModal component - moved outside to prevent re-renders
+const ContactModal = ({ isOpen, onClose, formData, onInputChange, onSubmit }) => {
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      >
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
+          onClick={onClose}
+        ></motion.div>
+        
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.8, opacity: 0 }}
+          transition={{ type: "spring", damping: 25, stiffness: 200 }}
+          className="relative text-white rounded-2xl shadow-2xl w-full max-w-sm mx-auto border border-white"
+        >
+          <div className="flex items-center justify-between bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-2xl p-4 border-b border-gray-700">
+            <h3 className="text-lg font-semibold">Get In Touch</h3>
+            <button
+              onClick={onClose}
+              className="p-1 hover:bg-red-700 rounded-full transition-colors duration-200"
+            >
+              <X size={18} className="text-gray-300 hover:text-white" />
+            </button>
+          </div>
+
+          <form onSubmit={onSubmit} className="p-4 space-y-3">
+            <div>
+              <label htmlFor="modal-name" className="block text-xs font-medium text-gray-200 mb-1">
+                Your Name
+              </label>
+              <input
+                type="text"
+                id="modal-name"
+                name="name"
+                value={formData.name}
+                onChange={onInputChange}
+                required
+                className="w-full px-3 py-2 bg-transparent text-white border border-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 placeholder-gray-200 text-sm"
+                placeholder="Enter your name"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="modal-email" className="block text-xs font-medium text-gray-200 mb-1">
+                Email Address
+              </label>
+              <input
+                type="email"
+                id="modal-email"
+                name="email"
+                value={formData.email}
+                onChange={onInputChange}
+                required
+                className="w-full px-3 py-2 bg-transparent text-white border border-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 placeholder-gray-200 text-sm"
+                placeholder="Enter your email"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="modal-message" className="block text-xs font-medium text-gray-200 mb-1">
+                Message
+              </label>
+              <textarea
+                id="modal-message"
+                name="message"
+                value={formData.message}
+                onChange={onInputChange}
+                required
+                rows="3"
+                className="w-full px-3 py-2 bg-transparent text-white border border-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 placeholder-gray-200 resize-none text-sm"
+                placeholder="Tell me about your project..."
+              ></textarea>
+            </div>
+
+            <div className="flex space-x-2 pt-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-3 py-2 border border-gray-600 text-gray-300 rounded-lg font-semibold hover:bg-red-600 transition-colors duration-200 text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200 shadow-lg text-sm"
+              >
+                Send
+              </button>
+            </div>
+          </form>
+
+          <div className="px-4 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-b-2xl border-t border-gray-700">
+            <p className="text-xs text-gray-300 text-center">
+              Or email me directly at{" "}
+              <a 
+                href="mailto:sandipbaste999@gmail.com"
+                className="text-white hover:text-green-500 font-medium"
+              >
+                sandipbaste999@gmail.com
+              </a>
+            </p>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
 
 const Portfolio = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -120,125 +240,6 @@ const Portfolio = () => {
     }
   };
 
-  const ContactModal = () => {
-    if (!isModalOpen) return null;
-
-    return (
-      <AnimatePresence>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        >
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
-            onClick={() => setIsModalOpen(false)}
-          ></motion.div>
-          
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="relative bg-black text-white rounded-2xl shadow-2xl w-full max-w-sm mx-auto border border-gray-700"
-          >
-            <div className="flex items-center justify-between p-4 border-b border-gray-700">
-              <h3 className="text-lg font-semibold">Get In Touch</h3>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 hover:bg-gray-700 rounded-full transition-colors duration-200"
-              >
-                <X size={18} className="text-gray-300 hover:text-white" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-4 space-y-3">
-              <div>
-                <label htmlFor="name" className="block text-xs font-medium text-gray-300 mb-1">
-                  Your Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-white placeholder-gray-400 text-sm"
-                  placeholder="Enter your name"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="email" className="block text-xs font-medium text-gray-300 mb-1">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-white placeholder-gray-400 text-sm"
-                  placeholder="Enter your email"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="message" className="block text-xs font-medium text-gray-300 mb-1">
-                  Message
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  value={formData.message}
-                  onChange={handleInputChange}
-                  required
-                  rows="3"
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-white placeholder-gray-400 resize-none text-sm"
-                  placeholder="Tell me about your project..."
-                ></textarea>
-              </div>
-
-              <div className="flex space-x-2 pt-3">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="flex-1 px-3 py-2 border border-gray-600 text-gray-300 rounded-lg font-semibold hover:bg-gray-700 transition-colors duration-200 text-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-3 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-colors duration-200 shadow-lg text-sm"
-                >
-                  Send
-                </button>
-              </div>
-            </form>
-
-            <div className="px-4 py-3 bg-gray-800 rounded-b-2xl border-t border-gray-700">
-              <p className="text-xs text-gray-400 text-center">
-                Or email me directly at{" "}
-                <a 
-                  href="mailto:sandipbaste999@gmail.com"
-                  className="text-primary-400 hover:text-primary-300 font-medium"
-                >
-                  sandipbaste999@gmail.com
-                </a>
-              </p>
-            </div>
-          </motion.div>
-        </motion.div>
-      </AnimatePresence>
-    );
-  };
-
   const SkillBubble = ({ skill, index }) => {
     const colors = [
       'bg-blue-300 text-blue-800 border-blue-400',
@@ -311,7 +312,7 @@ const Portfolio = () => {
                     onClick={() => scrollToSection(item.id)}
                     className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 text-sm xl:text-base ${
                       activeSection === item.id
-                        ? 'bg-primary-600 text-white shadow-lg'
+                        ? 'bg-blue-600 text-white shadow-lg'
                         : 'text-gray-300 hover:text-white hover:bg-gray-700'
                     }`}
                   >
@@ -332,7 +333,7 @@ const Portfolio = () => {
                     onClick={() => scrollToSection(item.id)}
                     className={`p-2 rounded-lg transition-all duration-200 ${
                       activeSection === item.id
-                        ? 'bg-primary-600 text-white shadow-lg'
+                        ? 'bg-blue-600 text-white shadow-lg'
                         : 'text-gray-300 hover:text-white hover:bg-gray-700'
                     }`}
                     title={item.label}
@@ -350,7 +351,7 @@ const Portfolio = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsModalOpen(true)}
-                className="bg-primary-600 text-white px-3 sm:px-4 py-2 rounded-lg font-semibold hover:bg-primary-700 transition-colors flex items-center gap-2 shadow-lg text-sm"
+                className="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-lg text-sm"
               >
                 <Send size={16} />
                 <span className="hidden sm:inline">Get In Touch</span>
@@ -384,7 +385,7 @@ const Portfolio = () => {
                         onClick={() => scrollToSection(item.id)}
                         className={`w-full flex items-center space-x-3 px-4 py-3 text-left transition-all duration-200 ${
                           activeSection === item.id
-                            ? 'bg-primary-600 text-white'
+                            ? 'bg-blue-600 text-white'
                             : 'text-gray-300 hover:text-white hover:bg-gray-700'
                         }`}
                       >
@@ -412,7 +413,7 @@ const Portfolio = () => {
                 transition={{ duration: 0.8 }}
                 className="text-center lg:text-left"
               >
-                <div className="text-xs sm:text-sm font-semibold text-primary-400 mb-3 sm:mb-4 uppercase tracking-wide">AI/ML DEVELOPER</div>
+                <div className="text-xs sm:text-sm font-semibold text-blue-400 mb-3 sm:mb-4 uppercase tracking-wide">AI/ML DEVELOPER</div>
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight mb-4 sm:mb-6">
                   Hello, my name is{' '}
                   <span className="bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
@@ -439,7 +440,7 @@ const Portfolio = () => {
                     href="https://github.com/sandipbaste"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-primary-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors flex items-center gap-2 shadow-lg text-sm sm:text-base"
+                    className="bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-lg text-sm sm:text-base"
                   >
                     View Projects <ExternalLink size={16} />
                   </motion.a>
@@ -450,7 +451,7 @@ const Portfolio = () => {
                     href='https://www.linkedin.com/in/sandipbaste999'
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="border border-primary-600 text-primary-400 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-primary-600/10 transition-colors flex items-center gap-2 text-sm sm:text-base"
+                    className="border border-blue-600 text-blue-400 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-blue-600/10 transition-colors flex items-center gap-2 text-sm sm:text-base"
                   >
                     <Linkedin size={16} /> LinkedIn
                   </motion.a>
@@ -462,7 +463,7 @@ const Portfolio = () => {
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="flex flex-col items-center text-center space-y-3 order-first lg:order-last"
               >
-                <div className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 p-[3px] group">
+                <div className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 p-[3px] group">
                   <motion.img
                     whileHover={{ scale: 1.05 }}
                     src={myphoto}
@@ -512,19 +513,19 @@ const Portfolio = () => {
                 <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 text-yellow-400">What I Do</h3>
                 <ul className="text-black space-y-2 sm:space-y-3 text-sm sm:text-base">
                   <li className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-primary-600 rounded-full flex-shrink-0"></div>
+                    <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></div>
                     AI-Powered Chatbot Development
                   </li>
                   <li className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-primary-600 rounded-full flex-shrink-0"></div>
+                    <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></div>
                     Voice Assistant Integration
                   </li>
                   <li className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-primary-600 rounded-full flex-shrink-0"></div>
+                    <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></div>
                     Real-Time API Backend Development
                   </li>
                   <li className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-primary-600 rounded-full flex-shrink-0"></div>
+                    <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0"></div>
                     Video Insight Extraction Systems
                   </li>
                 </ul>
@@ -560,7 +561,7 @@ const Portfolio = () => {
                       <p className="text-gray-400 text-xs sm:text-sm">{edu.location}</p>
                     </div>
                     <div className="mt-3 md:mt-0 md:text-right">
-                      <p className="text-primary-400 font-semibold text-sm sm:text-base">{edu.period}</p>
+                      <p className="text-blue-400 font-semibold text-sm sm:text-base">{edu.period}</p>
                       <p className="text-gray-300 text-sm sm:text-base">{edu.cgpa}</p>
                     </div>
                   </div>
@@ -627,14 +628,14 @@ const Portfolio = () => {
                   whileHover={{ y: -5 }}
                   className="bg-white text-black rounded-2xl p-4 sm:p-6 shadow-lg border border-gray-700 hover:shadow-xl transition-all duration-300 group"
                 >
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary-600/20 rounded-xl mb-3 sm:mb-4 flex items-center justify-center group-hover:bg-primary-600/30 transition-colors text-xl sm:text-2xl">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-600/20 rounded-xl mb-3 sm:mb-4 flex items-center justify-center group-hover:bg-blue-600/30 transition-colors text-xl sm:text-2xl">
                     {project.icon}
                   </div>
                   <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3">{project.title}</h3>
-                  <p className=" mb-3 sm:mb-4 leading-relaxed text-sm sm:text-base">{project.description}</p>
+                  <p className="mb-3 sm:mb-4 leading-relaxed text-sm sm:text-base">{project.description}</p>
                   <div className="flex flex-wrap gap-1 sm:gap-2 mb-3 sm:mb-4">
                     {project.tech.map((tech, techIndex) => (
-                      <span key={techIndex} className="bg-primary-600/20 text-primary-400 px-2 py-1 rounded-full text-xs sm:text-sm font-medium">
+                      <span key={techIndex} className="bg-blue-600/20 text-blue-700 px-2 py-1 rounded-full text-xs sm:text-sm font-medium">
                         {tech}
                       </span>
                     ))}
@@ -644,7 +645,7 @@ const Portfolio = () => {
                     href={project.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary-400 font-semibold hover:text-primary-300 transition-colors flex items-center gap-2 text-sm sm:text-base"
+                    className="text-blue-600 font-semibold hover:text-blue-500 transition-colors flex items-center gap-2 text-sm sm:text-base"
                   >
                     View Project <ExternalLink size={14} />
                   </motion.a>
@@ -655,7 +656,7 @@ const Portfolio = () => {
         </section>
 
         {/* Contact Section */}
-        <section id="contact" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-white ">
+        <section id="contact" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-white">
           <div className="container mx-auto max-w-6xl">
             <motion.h2 
               initial={{ opacity: 0, y: 30 }}
@@ -687,14 +688,14 @@ const Portfolio = () => {
                 <div className="space-y-4">
                   <motion.div 
                     whileHover={{ x: 10 }}
-                    className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 bg-white rounded-xl border border-gray-700 hover:border-primary-500 transition-all duration-300"
+                    className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 bg-white rounded-xl border border-gray-300 hover:border-blue-500 transition-all duration-300"
                   >
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-black rounded-xl hover:bg-primary-600 hover:text-white hover:border-primary-600 transition-colors shadow-lg flex items-center justify-center flex-shrink-0">
-                       <a href="mailto:sandipbaste999@gmail.com"><Mail size={20} className="text-primary-400" /></a>
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-gray-300 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors shadow-lg flex items-center justify-center flex-shrink-0">
+                      <Mail size={20} className="text-blue-600 group-hover:text-white" />
                     </div>
                     <div>
                       <p className="text-black font-bold text-xs sm:text-sm">Email</p>
-                      <a href="mailto:sandipbaste999@gmail.com" className="text-gray-700 hover:text-primary-400 transition-colors text-sm sm:text-base">
+                      <a href="mailto:sandipbaste999@gmail.com" className="text-gray-700 hover:text-blue-600 transition-colors text-sm sm:text-base">
                         sandipbaste999@gmail.com
                       </a>
                     </div>
@@ -702,10 +703,10 @@ const Portfolio = () => {
 
                   <motion.div 
                     whileHover={{ x: 10 }}
-                    className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 bg-white rounded-xl border border-gray-700 hover:border-primary-500  transition-all duration-300"
+                    className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 bg-white rounded-xl border border-gray-300 hover:border-blue-500 transition-all duration-300"
                   >
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-black rounded-xl hover:bg-primary-600 hover:text-white hover:border-primary-600 transition-colors shadow-lg flex items-center justify-center flex-shrink-0">
-                      <MapPin size={20} className="text-primary-400" />
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-gray-300 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors shadow-lg flex items-center justify-center flex-shrink-0">
+                      <MapPin size={20} className="text-blue-600 group-hover:text-white" />
                     </div>
                     <div>
                       <p className="text-black font-bold text-xs sm:text-sm">Location</p>
@@ -721,7 +722,7 @@ const Portfolio = () => {
                     href="https://www.linkedin.com/in/sandipbaste999" 
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-black rounded-xl hover:bg-primary-600 hover:text-white hover:border-primary-600 transition-colors shadow-lg flex items-center justify-center"
+                    className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-gray-300 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors shadow-lg flex items-center justify-center"
                   >
                     <Linkedin size={20} />
                   </motion.a>
@@ -731,17 +732,17 @@ const Portfolio = () => {
                     href="https://github.com/sandipbaste" 
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-black rounded-xl hover:bg-primary-600 hover:text-white hover:border-primary-600 transition-colors shadow-lg flex items-center justify-center"
+                    className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-gray-300 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors shadow-lg flex items-center justify-center"
                   >
                     <Github size={20} />
                   </motion.a>
                   <motion.a 
                     whileHover={{ scale: 1.1, y: -5 }}
                     whileTap={{ scale: 0.95 }}
-                    href="https://wa.me/919767952471"  // Direct WhatsApp chat link
+                    href="https://wa.me/919767952471"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-black rounded-xl hover:bg-primary-600 hover:text-white hover:border-primary-600] transition-colors shadow-lg flex items-center justify-center"
+                    className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-gray-300 rounded-xl hover:bg-green-600 hover:text-white hover:border-green-600 transition-colors shadow-lg flex items-center justify-center"
                   >
                     <MessageCircle size={20} />
                   </motion.a>
@@ -751,7 +752,7 @@ const Portfolio = () => {
                     href="https://instagram.com/your_instagram_handle" 
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-black rounded-xl hover:bg-primary-600 hover:text-white hover:border-primary-600  transition-colors shadow-lg flex items-center justify-center"
+                    className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-gray-300 rounded-xl hover:bg-pink-600 hover:text-white hover:border-pink-600 transition-colors shadow-lg flex items-center justify-center"
                   >
                     <Instagram size={20} />
                   </motion.a>
@@ -761,7 +762,7 @@ const Portfolio = () => {
                     href="https://facebook.com/your_facebook_profile" 
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-black rounded-xl hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2] transition-colors shadow-lg flex items-center justify-center"
+                    className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-gray-300 rounded-xl hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2] transition-colors shadow-lg flex items-center justify-center"
                   >
                     <Facebook size={20} />
                   </motion.a>
@@ -773,7 +774,7 @@ const Portfolio = () => {
                 initial={{ opacity: 0, x: 50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
-                className="bg-white rounded-2xl p-4 sm:p-6 md:p-8 shadow-xl border border-gray-700"
+                className="bg-white rounded-2xl p-4 sm:p-6 md:p-8 shadow-xl border border-gray-300"
               >
                 <h3 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-black">Send me a message</h3>
                 <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
@@ -789,7 +790,7 @@ const Portfolio = () => {
                         value={formData.name}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3  border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-black placeholder-gray-400 text-sm sm:text-base"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-black placeholder-gray-400 text-sm sm:text-base"
                         placeholder="Enter your name"
                       />
                     </div>
@@ -804,7 +805,7 @@ const Portfolio = () => {
                         value={formData.email}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3  border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-black placeholder-gray-400 text-sm sm:text-base"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-black placeholder-gray-400 text-sm sm:text-base"
                         placeholder="Enter your email"
                       />
                     </div>
@@ -820,7 +821,7 @@ const Portfolio = () => {
                       onChange={handleInputChange}
                       required
                       rows="4"
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 text-black placeholder-gray-400 resize-none text-sm sm:text-base"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-black placeholder-gray-400 resize-none text-sm sm:text-base"
                       placeholder="Tell me about your project or just say hello!"
                     ></textarea>
                   </div>
@@ -828,7 +829,7 @@ const Portfolio = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     type="submit"
-                    className="w-full bg-primary-600 text-white py-3 sm:py-4 rounded-lg font-semibold hover:bg-primary-700 transition-colors shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
+                    className="w-full bg-blue-600 text-white py-3 sm:py-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
                   >
                     <Send size={18} />
                     Send Message
@@ -890,8 +891,14 @@ const Portfolio = () => {
         </footer>
       </div>
 
-      {/* Contact Form Modal */}
-      <ContactModal />
+      {/* Contact Form Modal - Fixed version */}
+      <ContactModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        formData={formData}
+        onInputChange={handleInputChange}
+        onSubmit={handleSubmit}
+      />
     </div>
   );
 };
