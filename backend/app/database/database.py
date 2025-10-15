@@ -2,14 +2,17 @@ import mysql.connector
 import os
 from typing import Optional
 import asyncio
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class Database:
     def __init__(self):
-        self.host = os.getenv("MYSQL_HOST", "localhost")
-        self.user = os.getenv("MYSQL_USER", "root")
-        self.password = os.getenv("MYSQL_PASSWORD", "")
-        self.database = os.getenv("MYSQL_DATABASE", "portfolio_db")
-        self.port = os.getenv("MYSQL_PORT", "3306")
+        self.host = os.getenv("MYSQL_HOST", "MYSQL_HOST")
+        self.user = os.getenv("MYSQL_USER", "MYSQL_USER")
+        self.password = os.getenv("MYSQL_PASSWORD", "MYSQL_PASSWORD")
+        self.database = os.getenv("MYSQL_DATABASE", "MYSQL_DATABASE")
+        self.port = os.getenv("MYSQL_PORT", "MYSQL_PORT")
         
     def get_connection(self):
         try:
