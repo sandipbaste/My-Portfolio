@@ -722,7 +722,6 @@ class ChatService:
         if "RAG" in context: skills.append("RAG")
         if "OpenAI" in context: skills.append("OpenAI")
         if "Gemini" in context: skills.append("Gemini")
-        if "TensorFlow" in context: skills.append("TensorFlow")
         if "PyTorch" in context: skills.append("PyTorch")
         if "ReactJS" in context: skills.append("ReactJS")
         
