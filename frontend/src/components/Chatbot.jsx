@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Send, Bot, User, Clock } from 'lucide-react';
+import { MessageCircle, X, Send, Bot, User, Clock, Mic, MicOff, Volume2 } from 'lucide-react';
 import { chatAPI } from '../services/api';
 
 const Chatbot = () => {
@@ -8,10 +8,14 @@ const Chatbot = () => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const messagesEndRef = useRef(null);
   const autoCloseTimerRef = useRef(null);
   const autoOpenTimerRef = useRef(null);
   const [sessionId, setSessionId] = useState(null);
+  const recognitionRef = useRef(null);
+  const speechSynthesisRef = useRef(null);
 
   useEffect(() => {
     // Generate or get session ID
@@ -21,7 +25,149 @@ const Chatbot = () => {
       localStorage.setItem('chat_session_id', savedSessionId);
     }
     setSessionId(savedSessionId);
+
+    // Initialize speech recognition
+    initializeSpeechRecognition();
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      if (speechSynthesisRef.current) {
+        speechSynthesisRef.current.cancel();
+      }
+    };
   }, []);
+
+  const initializeSpeechRecognition = () => {
+    if (typeof window === 'undefined') return;
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+      console.warn('🎤 Speech Recognition not supported in this browser');
+      return;
+    }
+
+    recognitionRef.current = new SpeechRecognition();
+    
+    recognitionRef.current.continuous = false;
+    recognitionRef.current.interimResults = false;
+    recognitionRef.current.lang = 'en-US';
+
+    recognitionRef.current.onstart = () => {
+      console.log('🎤 Voice recognition started');
+      setIsListening(true);
+    };
+
+    recognitionRef.current.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      console.log('🎤 Voice input:', transcript);
+      setInputMessage(transcript);
+      setIsListening(false);
+      
+      // Auto-send message after voice input
+      setTimeout(() => {
+        sendMessage(transcript);
+      }, 500);
+    };
+
+    recognitionRef.current.onerror = (event) => {
+      console.error('🎤 Voice recognition error:', event.error);
+      setIsListening(false);
+      
+      let errorMessage = 'Voice recognition error. Please try again.';
+      
+      switch (event.error) {
+        case 'not-allowed':
+        case 'permission-denied':
+          errorMessage = 'Microphone access is blocked. Please allow microphone permissions in your browser settings.';
+          break;
+        case 'no-speech':
+          errorMessage = 'No speech detected. Please try speaking again.';
+          break;
+        case 'audio-capture':
+          errorMessage = 'No microphone found. Please check your microphone connection.';
+          break;
+        default:
+          errorMessage = `Voice recognition error: ${event.error}. Please try typing instead.`;
+      }
+      
+      // Show error message to user
+      if (isOpen) {
+        setMessages(prev => [...prev, {
+          text: errorMessage,
+          sender: 'bot',
+          timestamp: getCurrentTime()
+        }]);
+      }
+    };
+
+    recognitionRef.current.onend = () => {
+      console.log('🎤 Voice recognition ended');
+      setIsListening(false);
+    };
+  };
+
+  const speakText = (text) => {
+    if ('speechSynthesis' in window) {
+      // Stop any ongoing speech
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+
+      utterance.onstart = () => {
+        setIsSpeaking(true);
+      };
+
+      utterance.onend = () => {
+        setIsSpeaking(false);
+      };
+
+      utterance.onerror = (event) => {
+        console.error('🔊 Speech synthesis error:', event);
+        setIsSpeaking(false);
+      };
+
+      speechSynthesisRef.current = utterance;
+      window.speechSynthesis.speak(utterance);
+    } else {
+      console.warn('🔊 Speech synthesis not supported in this browser');
+    }
+  };
+
+  const startListening = () => {
+    if (!recognitionRef.current) {
+      console.error('🎤 Speech recognition not initialized');
+      return;
+    }
+
+    try {
+      recognitionRef.current.start();
+      // Speak welcome message when mic starts
+      speakText("This is Sandip AI Assistance. Start asking any question with me.");
+    } catch (error) {
+      console.error('🎤 Error starting voice recognition:', error);
+    }
+  };
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+    setIsListening(false);
+  };
+
+  const toggleListening = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  };
 
   const getCurrentTime = () => {
     const now = new Date();
@@ -66,20 +212,21 @@ const Chatbot = () => {
     return () => clearTimeout(autoCloseTimerRef.current);
   }, [isOpen, messages]);
 
-  const sendMessage = async () => {
-    if (!inputMessage.trim() || isLoading) return;
+  const sendMessage = async (text = null) => {
+    const messageToSend = text || inputMessage;
+    if (!messageToSend.trim() || isLoading) return;
 
     const userMessage = { 
-      text: inputMessage, 
+      text: messageToSend, 
       sender: 'user',
       timestamp: getCurrentTime()
     };
     setMessages(prev => [...prev, userMessage]);
-    setInputMessage('');
+    if (!text) setInputMessage('');
     setIsLoading(true);
 
     try {
-      const response = await chatAPI.sendMessage(inputMessage, sessionId);
+      const response = await chatAPI.sendMessage(messageToSend, sessionId);
       
       const botMessage = { 
         text: response.response, 
@@ -87,10 +234,15 @@ const Chatbot = () => {
         timestamp: getCurrentTime()
       };
       setMessages(prev => [...prev, botMessage]);
+
+      // Auto-speak bot responses using GTTS (browser's speech synthesis)
+      if (response.response) {
+        speakText(response.response);
+      }
     } catch (error) {
       console.error('Chat error:', error);
       const errorMessage = { 
-        text: "Sorry, I'm having trouble responding right now. Please make sure the backend server is running.", 
+        text: "Sorry, I'm having trouble responding right now. Please make sure your internet connection is working well.", 
         sender: 'bot',
         timestamp: getCurrentTime()
       };
@@ -215,7 +367,7 @@ const Chatbot = () => {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-800/50 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-400 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
               {messages.length === 0 ? (
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
@@ -404,18 +556,75 @@ const Chatbot = () => {
                   className="flex-1 bg-white text-gray-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
                   disabled={isLoading}
                 />
+                
+                {/* Voice Input Button */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={toggleListening}
+                  disabled={isLoading}
+                  className={`p-3 rounded-xl transition-all duration-200 flex items-center justify-center shadow-lg ${
+                    isListening 
+                      ? 'bg-red-500 text-white hover:bg-red-600 animate-pulse' 
+                      : isSpeaking
+                      ? 'bg-green-500 text-white hover:bg-green-600'
+                      : 'bg-white text-gray-800 hover:bg-gray-800 hover:text-white'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {isListening ? (
+                    <MicOff size={20} />
+                  ) : isSpeaking ? (
+                    <Volume2 size={20} />
+                  ) : (
+                    <Mic size={20} />
+                  )}
+                </motion.button>
+
+                {/* Send Button */}
                 <motion.button
                   whileHover={{ 
                     scale: inputMessage.trim() && !isLoading ? 1.05 : 1,
                   }}
                   whileTap={{ scale: inputMessage.trim() && !isLoading ? 0.95 : 1 }}
-                  onClick={sendMessage}
+                  onClick={() => sendMessage()}
                   disabled={isLoading || !inputMessage.trim()}
                   className="bg-white text-gray-800 p-3 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg hover:bg-gray-800 hover:text-white"
                 >
                   <Send size={20} />
                 </motion.button>
               </div>
+
+              {/* Voice Status Indicator */}
+              {(isListening || isSpeaking) && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mt-2 text-center"
+                >
+                  <div className="flex items-center justify-center space-x-2 text-white text-sm">
+                    {isListening ? (
+                      <>
+                        <motion.div
+                          animate={{ scale: [1, 1.2, 1] }}
+                          transition={{ duration: 1, repeat: Infinity }}
+                          className="w-2 h-2 bg-red-500 rounded-full"
+                        />
+                        <span>Listening... Speak now</span>
+                      </>
+                    ) : isSpeaking ? (
+                      <>
+                        <motion.div
+                          animate={{ scale: [1, 1.3, 1] }}
+                          transition={{ duration: 0.8, repeat: Infinity }}
+                          className="w-2 h-2 bg-green-500 rounded-full"
+                        />
+                        <span>Speaking...</span>
+                      </>
+                    ) : null}
+                  </div>
+                </motion.div>
+              )}
             </motion.div>
           </motion.div>
         )}

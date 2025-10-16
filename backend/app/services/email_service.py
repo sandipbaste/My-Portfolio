@@ -68,7 +68,7 @@ class EmailService:
             
             In the meantime, feel free to explore my:
             • GitHub: https://github.com/sandipbaste
-            • LinkedIn: https://www.linkedin.com/in/sandipbaste999
+            • LinkedIn: linkedin.com/in/sandipbaste999
             • Projects: https://github.com/sandipbaste?tab=repositories
             
             Best regards,

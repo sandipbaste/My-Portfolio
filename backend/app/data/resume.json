@@ -1,0 +1,77 @@
+{
+  "personal_info": {
+    "full_name": "Sandip Baste",
+    "title": "AI/ML Developer",
+    "email": "sandipbaste999@gmail.com",
+    "phone": "+91 9767952471",
+    "github": "github.com/sandipbaste",
+    "linkedin": "linkedin.com/in/sandipbaste999",
+    "location": "Nashik, Maharashtra, India"
+  },
+  "summary": "AI/ML Developer with strong specialization in Generative AI and Large Language Models (LLMs). Proven ability to build intelligent AI solutions including chatbots, voice assistants and video insight systems.",
+  "skills": [
+    {
+      "category": "Languages",
+      "items": ["Python"]
+    },
+    {
+      "category": "AI/ML & LLMs",
+      "items": ["Generative AI", "RAG", "NLP", "AI Agents", "LangChain", "LangGraph", "OpenAI", "Hugging Face", "Gemini"]
+    },
+    {
+      "category": "Frameworks",
+      "items": ["FastAPI", "ReactJS", "NumPy", "Pandas", "REST APIs"]
+    },
+    {
+      "category": "Databases",
+      "items": ["MySQL", "MongoDB", "Vector Databases (Chroma, FAISS)"]
+    },
+    {
+      "category": "Tools",
+      "items": ["Git", "GitHub", "Docker", "Postman", "Vercel", "Netlify"]
+    }
+  ],
+  "experience": [
+    {
+      "company": "Application Square Infotech",
+      "position": "AI/ML Developer Intern",
+      "duration": "2024 - Present",
+      "description": "Developed chatbot and voicebot applications using LLMs and RAG techniques",
+      "technologies": ["Python", "LLMs", "RAG", "LangChain", "FastAPI"]
+    }
+  ],
+  "projects": [
+    {
+      "name": "AI WhatsApp Chatbot",
+      "description": "Built an AI-powered WhatsApp chatbot using Python and Gemini API for automated conversations",
+      "technologies": ["Python", "Gemini API", "PyAutoGUI", "Piperclip"],
+      "github_url": "https://github.com/sandipbaste/ai-whatsapp-chatbot"
+    },
+    {
+      "name": "AI Voice Assistant - Nora",
+      "description": "Developed an intelligent voice assistant with speech recognition and text-to-speech capabilities",
+      "technologies": ["Python", "Gemini API", "SpeechRecognition", "pyttsx3"],
+      "github_url": "https://github.com/sandipbaste/ai-voice-assistant"
+    },
+    {
+      "name": "Video Insight Extractor",
+      "description": "Created a system to extract insights from videos using speech-to-text and AI analysis",
+      "technologies": ["Python", "FFmpeg", "Faster-Whisper", "FastAPI", "Gemini API"],
+      "github_url": "https://github.com/sandipbaste/video-insight-extractor"
+    }
+  ],
+  "education": [
+    {
+      "institution": "K.K. Wagh College",
+      "degree": "M.Sc. Computer Science",
+      "duration": "2023 - 2025",
+      "grade": "CGPA: 7.91"
+    },
+    {
+      "institution": "K.K. Wagh College",
+      "degree": "B.Sc. Computer Science",
+      "duration": "2020 - 2023",
+      "grade": "CGPA: 8.27"
+    }
+  ]
+}

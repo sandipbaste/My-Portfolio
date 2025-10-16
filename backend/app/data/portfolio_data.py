@@ -39,7 +39,7 @@ portfolio_data = {
         "email": "sandipbaste999@gmail.com",
         "phone": "+91 9767952471", 
         "github": "github.com/sandipbaste",
-        "linkedin": "https://www.linkedin.com/in/sandipbaste999",
+        "linkedin": "linkedin.com/in/sandipbaste999",
         "location": "Nashik, Maharashtra, India"
     },
     "education": {

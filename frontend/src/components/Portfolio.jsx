@@ -57,7 +57,7 @@ const ContactModal = ({ isOpen, onClose, formData, onInputChange, onSubmit, isLo
                 onChange={onInputChange}
                 required
                 disabled={isLoading}
-                className="w-full px-3 py-2 bg-transparent text-white border border-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-200 text-sm disabled:opacity-50"
+                className="w-full px-3 py-2 bg-transparent font-bold text-white border border-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-200 text-sm disabled:opacity-50"
                 placeholder="Enter your name"
               />
             </div>
@@ -74,7 +74,7 @@ const ContactModal = ({ isOpen, onClose, formData, onInputChange, onSubmit, isLo
                 onChange={onInputChange}
                 required
                 disabled={isLoading}
-                className="w-full px-3 py-2 bg-transparent text-white border border-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-200 text-sm disabled:opacity-50"
+                className="w-full px-3 py-2 bg-transparent font-bold text-white border border-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-200 text-sm disabled:opacity-50"
                 placeholder="Enter your email"
               />
             </div>
@@ -91,7 +91,7 @@ const ContactModal = ({ isOpen, onClose, formData, onInputChange, onSubmit, isLo
                 required
                 rows="3"
                 disabled={isLoading}
-                className="w-full px-3 py-2 bg-transparent text-white border border-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-200 resize-none text-sm disabled:opacity-50"
+                className="w-full px-3 py-2 bg-transparent font-bold text-white border border-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-200 resize-none text-sm disabled:opacity-50"
                 placeholder="Tell me about your project..."
               ></textarea>
             </div>
@@ -514,7 +514,7 @@ const Portfolio = () => {
                   <motion.a 
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    href='https://www.linkedin.com/in/sandipbaste999'
+                    href='linkedin.com/in/sandipbaste999'
                     target="_blank"
                     rel="noopener noreferrer"
                     className="border border-blue-600 text-blue-400 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-blue-600/10 transition-colors flex items-center gap-2 text-sm sm:text-base"
@@ -548,7 +548,7 @@ const Portfolio = () => {
 
         {/* About Section */}
         <section id="about" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-white">
-          <div className="container mx-auto max-w-4xl">
+          <div className="container mx-auto max-w-4xl my-12">
             <motion.h2 
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -639,7 +639,7 @@ const Portfolio = () => {
 
         {/* Skills Section */}
         <section id="skills" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 bg-white text-black">
-          <div className="container mx-auto max-w-6xl">
+          <div className="container mx-auto max-w-6xl my-24">
             <motion.h2 
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -785,7 +785,7 @@ const Portfolio = () => {
                   <motion.a 
                     whileHover={{ scale: 1.1, y: -5 }}
                     whileTap={{ scale: 0.95 }}
-                    href="https://www.linkedin.com/in/sandipbaste999" 
+                    href="linkedin.com/in/sandipbaste999" 
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-10 h-10 sm:w-12 sm:h-12 bg-white text-gray-800 border border-gray-300 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors shadow-lg flex items-center justify-center"
@@ -935,7 +935,7 @@ const Portfolio = () => {
               <div className="flex justify-center space-x-4 sm:space-x-6">
                 <motion.a 
                   whileHover={{ scale: 1.2, y: -2 }}
-                  href="https://www.linkedin.com/in/sandipbaste999" 
+                  href="linkedin.com/in/sandipbaste999" 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-400 hover:text-white transition-colors"

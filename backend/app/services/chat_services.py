@@ -1,15 +1,19 @@
 import uuid
 import os
 import re
+import json
+import webbrowser
 from typing import List, Dict, Any
 import google.generativeai as genai
 from langchain.schema import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
+import base64
+from gtts import gTTS
+import io
 
 class ChatService:
     def __init__(self):
@@ -18,6 +22,16 @@ class ChatService:
         self.llm = None
         self.retriever = None
         self.is_system_ready = False
+        
+        # Social media URLs
+        self.social_media_urls = {
+            'github': 'https://github.com/sandipbaste',
+            'linkedin': 'https://linkedin.com/in/sandipbaste999',
+            'instagram': 'https://instagram.com/sandipbaste',
+            'facebook': 'https://facebook.com/sandipbaste',
+            'twitter': 'https://twitter.com/sandipbaste',
+            'portfolio': 'https://sandipbaste.github.io'
+        }
         
         # Configure Google API
         self.configure_google_api()
@@ -37,76 +51,287 @@ class ChatService:
             print(f"❌ Error configuring Google API: {e}")
             raise
 
+    def text_to_speech_base64(self, text: str) -> str:
+        """Convert text to speech using gTTS and return base64 audio"""
+        try:
+            # Clean text for speech
+            clean_text = re.sub(r'[^\w\s.,!?;:()\-@#&+*%/]', '', text)
+            clean_text = clean_text[:500]  # Limit text length for gTTS
+            
+            # Create gTTS object
+            tts = gTTS(text=clean_text, lang='en', slow=False)
+            
+            # Save to bytes buffer
+            audio_buffer = io.BytesIO()
+            tts.write_to_fp(audio_buffer)
+            audio_buffer.seek(0)
+            
+            # Convert to base64
+            audio_base64 = base64.b64encode(audio_buffer.read()).decode('utf-8')
+            
+            print("✅ Text converted to speech successfully")
+            return audio_base64
+            
+        except Exception as e:
+            print(f"❌ Error converting text to speech: {e}")
+            return ""
+
     def clean_text(self, text: str) -> str:
         """Clean and preprocess text"""
         text = re.sub(r'\s+', ' ', text)
         text = re.sub(r'[^\w\s.,!?;:()\-@#&+*%/]', '', text)
         return text.strip()
 
+    def is_social_media_query(self, query: str) -> bool:
+        """Check if the query is asking to open social media profiles"""
+        social_keywords = [
+            'open', 'launch', 'visit', 'go to', 'navigate to', 'show me',
+            'linkedin', 'github', 'git hub', 'instagram', 'insta', 'facebook', 
+            'fb', 'twitter', 'x', 'portfolio', 'website', 'profile'
+        ]
+        
+        query_lower = query.lower()
+        return any(keyword in query_lower for keyword in social_keywords)
+
+    def handle_social_media_request(self, query: str) -> Dict[str, Any]:
+        """Handle social media profile opening requests"""
+        query_lower = query.lower()
+        
+        # Map queries to social media platforms
+        platform_mapping = {
+            'linkedin': 'linkedin',
+            'github': 'github',
+            'git hub': 'github',
+            'instagram': 'instagram',
+            'insta': 'instagram',
+            'facebook': 'facebook',
+            'fb': 'facebook',
+            'twitter': 'twitter',
+            'x': 'twitter',
+            'portfolio': 'portfolio',
+            'website': 'portfolio'
+        }
+        
+        # Find which platform is being requested
+        requested_platform = None
+        for keyword, platform in platform_mapping.items():
+            if keyword in query_lower:
+                requested_platform = platform
+                break
+        
+        if requested_platform and requested_platform in self.social_media_urls:
+            url = self.social_media_urls[requested_platform]
+            try:
+                # Open the URL in the default web browser
+                webbrowser.open(url)
+                response_text = f"✅ Opening my {requested_platform.capitalize()} profile...\nYou can visit: {url}"
+                
+                # Generate speech for social media action
+                audio_base64 = self.text_to_speech_base64(f"Opening your {requested_platform} profile now.")
+                
+                return {
+                    "response": response_text,
+                    "audio": audio_base64,
+                    "action": "open_url",
+                    "url": url,
+                    "platform": requested_platform,
+                    "sources": ["social_media"]
+                }
+            except Exception as e:
+                response_text = f"❌ Couldn't open {requested_platform} automatically. You can manually visit: {url}"
+                audio_base64 = self.text_to_speech_base64(f"Please manually visit my {requested_platform} profile at {url}")
+                
+                return {
+                    "response": response_text,
+                    "audio": audio_base64,
+                    "action": "url_only",
+                    "url": url,
+                    "platform": requested_platform,
+                    "sources": ["social_media_error"]
+                }
+        else:
+            # If no specific platform is mentioned, show all available profiles
+            profiles_text = "Here are my social media profiles:\n"
+            for platform, url in self.social_media_urls.items():
+                profiles_text += f"• {platform.capitalize()}: {url}\n"
+            profiles_text += "\nWhich one would you like me to open?"
+            
+            audio_base64 = self.text_to_speech_base64("Here are my social media profiles. Which one would you like me to open?")
+            
+            return {
+                "response": profiles_text,
+                "audio": audio_base64,
+                "action": "list_profiles",
+                "sources": ["social_media_list"]
+            }
+
+    def load_resume_from_json(self) -> str:
+        """Load and parse resume data from JSON file"""
+        try:
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            resume_path = os.path.join(base_dir, "..", "data", "resume.json")
+            
+            if not os.path.exists(resume_path):
+                print(f"❌ Resume JSON not found at: {resume_path}")
+                return self.get_fallback_resume_content()
+            
+            print(f"✅ Found resume JSON at: {resume_path}")
+            
+            with open(resume_path, 'r', encoding='utf-8') as file:
+                resume_data = json.load(file)
+            
+            # Convert JSON to formatted text
+            formatted_content = self.format_resume_to_text(resume_data)
+            print("✅ Successfully loaded and parsed resume JSON")
+            
+            return formatted_content
+            
+        except Exception as e:
+            print(f"❌ Error loading resume JSON: {e}")
+            return self.get_fallback_resume_content()
+
+    def format_resume_to_text(self, resume_data: Dict[str, Any]) -> str:
+        """Convert JSON resume data to formatted text"""
+        sections = []
+        
+        # Personal Information
+        personal_info = resume_data.get('personal_info', {})
+        sections.append(f"""
+        {personal_info.get('full_name', 'Sandip Baste')} - {personal_info.get('title', 'AI/ML Developer')}
+
+        CONTACT:
+        Email: {personal_info.get('email', 'sandipbaste999@gmail.com')}
+        Phone: {personal_info.get('phone', '+91 9767952471')}
+        GitHub: {personal_info.get('github', 'github.com/sandipbaste')}
+        LinkedIn: {personal_info.get('linkedin', 'linkedin.com/in/sandipbaste999')}
+        Location: {personal_info.get('location', 'Nashik, Maharashtra, India')}
+        """)
+        
+        # Summary
+        summary = resume_data.get('summary', '')
+        if summary:
+            sections.append(f"SUMMARY:\n{summary}")
+        
+        # Technical Skills
+        skills = resume_data.get('skills', [])
+        if skills:
+            skills_text = "TECHNICAL SKILLS:\n"
+            for skill_category in skills:
+                category = skill_category.get('category', '')
+                items = skill_category.get('items', [])
+                if category and items:
+                    skills_text += f"{category}: {', '.join(items)}\n"
+            sections.append(skills_text)
+        
+        # Experience
+        experience = resume_data.get('experience', [])
+        if experience:
+            exp_text = "EXPERIENCE:\n"
+            for exp in experience:
+                company = exp.get('company', '')
+                position = exp.get('position', '')
+                duration = exp.get('duration', '')
+                description = exp.get('description', '')
+                technologies = exp.get('technologies', [])
+                
+                exp_text += f"• {position} at {company} ({duration})\n"
+                if description:
+                    exp_text += f"  {description}\n"
+                if technologies:
+                    exp_text += f"  Technologies: {', '.join(technologies)}\n"
+            sections.append(exp_text)
+        
+        # Projects
+        projects = resume_data.get('projects', [])
+        if projects:
+            proj_text = "PROJECTS:\n"
+            for i, project in enumerate(projects, 1):
+                name = project.get('name', '')
+                description = project.get('description', '')
+                technologies = project.get('technologies', [])
+                github_url = project.get('github_url', '')
+                
+                proj_text += f"{i}. {name}\n"
+                if description:
+                    proj_text += f"   {description}\n"
+                if technologies:
+                    proj_text += f"   Technologies: {', '.join(technologies)}\n"
+                if github_url:
+                    proj_text += f"   GitHub: {github_url}\n"
+            sections.append(proj_text)
+        
+        # Education
+        education = resume_data.get('education', [])
+        if education:
+            edu_text = "EDUCATION:\n"
+            for edu in education:
+                institution = edu.get('institution', '')
+                degree = edu.get('degree', '')
+                duration = edu.get('duration', '')
+                grade = edu.get('grade', '')
+                
+                edu_text += f"• {degree} - {institution} ({duration}) - {grade}\n"
+            sections.append(edu_text)
+        
+        return "\n\n".join(sections)
+
+    def get_fallback_resume_content(self) -> str:
+        """Fallback resume content if JSON file fails"""
+        return """
+        Sandip Baste - AI/ML Developer
+
+        CONTACT: 
+        Email: sandipbaste999@gmail.com
+        Phone: +91 9767952471
+        GitHub: github.com/sandipbaste
+        Location: Nashik, Maharashtra, India
+        LinkedIn: linkedin.com/in/sandipbaste999
+        SUMMARY:
+        AI/ML Developer with strong specialization in Generative AI and Large Language Models (LLMs). 
+        Proven ability to build intelligent AI solutions including chatbots, voice assistants and video insight systems.
+
+        TECHNICAL SKILLS:
+        Languages: Python
+        AI/ML & LLMs: Generative AI, RAG, NLP, AI Agents, LangChain, LangGraph, OpenAI, Hugging Face, Gemini
+        Frameworks: FastAPI, ReactJS, NumPy, Pandas, REST APIs
+        Databases: MySQL, MongoDB, Vector Databases (Chroma, FAISS)
+        Tools: Git, GitHub, Docker, Postman, Vercel, Netlify
+
+        PROJECTS:
+        1. AI WhatsApp Chatbot - Python, Gemini API, PyAutoGUI, Piperclip
+        2. AI Voice Assistant - Nora - Python, Gemini API, SpeechRecognition, pyttsx3
+        3. Video Insight Extractor - Python, FFmpeg, Faster-Whisper, FastAPI, Gemini API
+
+        EDUCATION:
+        M.Sc. (Computer Science) - K.K. Wagh College - CGPA: 7.91
+        B.Sc. (Computer Science) - K.K. Wagh College - CGPA: 8.27
+        """
+
     def load_documents(self) -> List[Document]:
         documents = []
         try:
-            base_dir = os.path.dirname(os.path.abspath(__file__))
-            resume_path = os.path.join(base_dir, "..", "data", "resume.pdf")
+            # Load resume content from JSON
+            resume_content = self.load_resume_from_json()
+            cleaned_content = self.clean_text(resume_content)
             
-            if os.path.exists(resume_path):
-                print(f"✅ Found resume at: {resume_path}")
-                loader = PyPDFLoader(resume_path)
-                documents.extend(loader.load())
-                print(f"✅ Loaded resume with {len(documents)} pages")
-                
-                for doc in documents:
-                    doc.page_content = self.clean_text(doc.page_content)
-                
-                if documents:
-                    print("First page content preview:")
-                    print(documents[0].page_content[:300] + "...")
-            else:
-                print(f"❌ Resume not found at: {resume_path}")
-                # Enhanced fallback with GitHub information
-                fallback_content = """
-                Sandip Baste - AI/ML Developer
-
-                CONTACT: 
-                Email: sandipbaste999@gmail.com
-                Phone: +91 9767952471
-                GitHub: github.com/sandipbaste
-                Location: Nashik, Maharashtra, India
-                LinkedIn: https://www.linkedin.com/in/sandipbaste999
-                SUMMARY:
-                AI/ML Developer with strong specialization in Generative AI and Large Language Models (LLMs). 
-                Proven ability to build intelligent AI solutions including chatbots, voice assistants and video insight systems.
-
-                TECHNICAL SKILLS:
-                Languages: Python
-                AI/ML & LLMs: Generative AI, RAG, NLP, AI Agents, LangChain, LangGraph, OpenAI, Hugging Face, Gemini
-                Frameworks: FastAPI, ReactJS, NumPy, Pandas, REST APIs
-                Databases: MySQL, MongoDB, Vector Databases (Chroma, FAISS)
-                Tools: Git, GitHub, Docker, Postman, Vercel, Netlify
-
-                PROJECTS:
-                1. AI WhatsApp Chatbot - Python, Gemini API, PyAutoGUI, Piperclip
-                2. AI Voice Assistant - Nora - Python, Gemini API, SpeechRecognition, pyttsx3
-                3. Video Insight Extractor - Python, FFmpeg, Faster-Whisper, FastAPI, Gemini API
-
-                EDUCATION:
-                M.Sc. (Computer Science) - K.K. Wagh College - CGPA: 7.91
-                B.Sc. (Computer Science) - K.K. Wagh College - CGPA: 8.27
-                """
-                fallback = Document(
-                    page_content=self.clean_text(fallback_content),
-                    metadata={"source": "fallback_resume"}
-                )
-                documents.append(fallback)
-                print("✅ Using enhanced fallback resume content")
+            document = Document(
+                page_content=cleaned_content,
+                metadata={"source": "resume_json", "type": "resume"}
+            )
+            documents.append(document)
+            
+            print(f"✅ Created document from JSON with {len(cleaned_content)} characters")
                 
         except Exception as e:
-            print(f"❌ Error loading resume: {e}")
-            emergency_fallback = Document(
-                page_content="Sandip Baste - AI/ML Developer. Email: sandipbaste999@gmail.com. GitHub: github.com/sandipbaste. Skills: Python, Generative AI, LLMs.",
+            print(f"❌ Error loading documents from JSON: {e}")
+            # Emergency fallback
+            fallback_content = self.get_fallback_resume_content()
+            document = Document(
+                page_content=self.clean_text(fallback_content),
                 metadata={"source": "emergency_fallback"}
             )
-            documents.append(emergency_fallback)
+            documents.append(document)
+            print("✅ Using fallback resume content")
             
         return documents
 
@@ -114,7 +339,7 @@ class ChatService:
         try:
             print("🚀 Initializing RAG system with Google Gemini...")
             
-            # Setup Google Gemini LLM with correct model name
+            # Setup Google Gemini LLM
             print("🤖 Setting up Gemini model...")
             try:
                 self.llm = ChatGoogleGenerativeAI(
@@ -125,16 +350,7 @@ class ChatService:
                 print("✅ Gemini Pro model ready")
             except Exception as e:
                 print(f"❌ Gemini Pro not available: {e}")
-                try:
-                    self.llm = ChatGoogleGenerativeAI(
-                        model="gemini-2.5-flash",
-                        temperature=0.3,
-                        google_api_key=os.getenv("GOOGLE_API_KEY")
-                    )
-                    print("✅ Gemini Pro model ready (with models/ prefix)")
-                except Exception as e2:
-                    print(f"❌ All Gemini models failed: {e2}")
-                    self.llm = None
+                self.llm = None
 
             # Setup Google Embeddings
             print("🔧 Setting up text-embedding-004 embeddings...")
@@ -146,17 +362,7 @@ class ChatService:
                 print("✅ Embeddings ready")
             except Exception as e:
                 print(f"❌ Error setting up embeddings: {e}")
-                # Fallback to local embeddings if Google embeddings fail
-                try:
-                    from langchain.embeddings import HuggingFaceEmbeddings
-                    embeddings = HuggingFaceEmbeddings(
-                        model_name="sentence-transformers/all-MiniLM-L6-v2",
-                        model_kwargs={'device': 'cpu'}
-                    )
-                    print("✅ Using fallback local embeddings")
-                except Exception as e2:
-                    print(f"❌ Fallback embeddings also failed: {e2}")
-                    return
+                return
 
             # Load and process documents
             documents = self.load_documents()
@@ -213,8 +419,6 @@ class ChatService:
             
             context_parts = []
             for i, doc in enumerate(relevant_docs):
-                content_preview = doc.page_content[:150] + "..." if len(doc.page_content) > 150 else doc.page_content
-                print(f"   📖 Document {i+1}: {content_preview}")
                 context_parts.append(doc.page_content)
             
             context = "\n\n".join(context_parts)
@@ -267,7 +471,7 @@ class ChatService:
             if not self.llm:
                 return f"I can provide general information about '{query}'. For detailed information, please check reliable sources."
             
-            prompt = f""" You are Sandip Assistance Work as a Alexa or google assistance if user ask any general Question then show answer in 2-3 sentence only.
+            prompt = f"""You are Sandip Assistance. Work as a Alexa or google assistant. If user ask any general Question then show answer in 2-3 sentence only.
             
             Provide a concise and accurate answer to the following question in 2-3 sentences:
 
@@ -319,7 +523,7 @@ class ChatService:
         elif any(word in question_lower for word in ['skill']):
             return self.extract_skills_response(context)
         else:
-            return "Asking me a specific topics like my Experiance, skills, projects, or contact information."
+            return "Ask me about specific topics like my experience, skills, projects, or contact information."
 
     def format_projects_response(self, context: str) -> str:
         """Format projects information from context"""
@@ -351,7 +555,22 @@ class ChatService:
             # Handle greetings
             if cleaned_message in ['hi', 'hello', 'hey']:
                 response_text = "Hello! I'm Sandip's AI assistant. What can I help you learn about Sandip today?"
+                audio_base64 = self.text_to_speech_base64("Hello! I'm Sandip's AI assistant. What can I help you learn about Sandip today?")
                 sources = ["greeting"]
+                
+            # Handle social media requests
+            elif self.is_social_media_query(cleaned_message):
+                print("🔗 Handling social media request...")
+                result = self.handle_social_media_request(message)
+                return {
+                    "response": result["response"],
+                    "audio": result.get("audio", ""),
+                    "session_id": session_id,
+                    "sources": result["sources"],
+                    "action": result.get("action"),
+                    "url": result.get("url"),
+                    "platform": result.get("platform")
+                }
                 
             # Handle resume-related queries
             elif self.is_resume_related_query(cleaned_message):
@@ -361,43 +580,55 @@ class ChatService:
                 if context:
                     # Direct responses for specific queries without LLM
                     if any(word in cleaned_message for word in ['github', 'git']):
-                        response_text = "You can find my GitHub profile at: github.com/sandipbaste"
+                        response_text = "You can find my GitHub profile at: github.com/sandipbaste\nWould you like me to open it for you?"
+                        audio_base64 = self.text_to_speech_base64("You can find my GitHub profile at github.com/sandipbaste. Would you like me to open it for you?")
                     
                     elif any(word in cleaned_message for word in ['email']):
                         response_text = "You can reach me at: sandipbaste999@gmail.com"
+                        audio_base64 = self.text_to_speech_base64("You can reach me at sandipbaste999@gmail.com")
                     
                     elif any(word in cleaned_message for word in ['phone', 'number', 'contact']):
                         if 'email' not in cleaned_message:
                             response_text = "My contact number is: +91 9767952471"
+                            audio_base64 = self.text_to_speech_base64("My contact number is plus ninety one ninety seven sixty seven ninety five twenty four seventy one")
                         else:
-                            response_text = "My contact information:\nEmail: sandipbaste999@gmail.com\nPhone: +91 9767952471\nGitHub: github.com/sandipbaste"
+                            response_text = "My contact information:\nEmail: sandipbaste999@gmail.com\nPhone: +91 9767952471\nGitHub: github.com/sandipbaste\nLinkedIn: linkedin.com/in/sandipbaste999"
+                            audio_base64 = self.text_to_speech_base64("My contact information includes email, phone, GitHub, and LinkedIn profiles.")
                     
                     elif any(word in cleaned_message for word in ['project']):
                         response_text = self.format_projects_response(context)
+                        audio_base64 = self.text_to_speech_base64("I have worked on several AI projects including WhatsApp chatbot, voice assistant, and video insight extractor.")
                     
                     elif any(word in cleaned_message for word in ['skill']):
                         response_text = self.extract_skills_response(context)
+                        audio_base64 = self.text_to_speech_base64("My skills include Python, Generative AI, Large Language Models, and various AI frameworks.")
                     
                     elif any(word in cleaned_message for word in ['experience']):
                         response_text = self.extract_experience_response(context)
+                        audio_base64 = self.text_to_speech_base64("I worked as an AI/ML Developer Intern at Application Square Infotech, where I developed chatbot and voicebot applications.")
                     
                     elif any(word in cleaned_message for word in ['education']):
                         response_text = self.extract_education_response(context)
+                        audio_base64 = self.text_to_speech_base64("I'm pursuing Master's in Computer Science with a CGPA of seven point nine one, and completed Bachelor's with eight point two seven CGPA.")
                     
                     elif any(word in cleaned_message for word in ['summary', 'about', 'who is']):
                         response_text = self.extract_summary_response(context)
+                        audio_base64 = self.text_to_speech_base64("I'm Sandip Baste, an AI/ML Developer specializing in Generative AI and Large Language Models. I build intelligent AI solutions.")
                     
                     else:
                         # Use LLM for other queries
                         response_text = await self.get_llm_response(context, message)
+                        audio_base64 = self.text_to_speech_base64(response_text)
                 else:
                     response_text = "I couldn't find specific information about that in my resume. Please ask about my skills, projects, experience, education, or contact information."
+                    audio_base64 = self.text_to_speech_base64("I couldn't find specific information about that. Please ask about my skills, projects, or experience.")
                     sources = ["resume_not_found"]
             
             # Handle general knowledge questions
             else:
                 print("🌍 Handling general knowledge question...")
                 response_text = await self.get_general_knowledge_response(message)
+                audio_base64 = self.text_to_speech_base64(response_text)
                 sources = ["general_knowledge"]
             
             print(f"🤖 Generated response: {response_text}")
@@ -405,6 +636,7 @@ class ChatService:
             
             return {
                 "response": response_text, 
+                "audio": audio_base64,
                 "session_id": session_id, 
                 "sources": sources
             }
@@ -415,19 +647,26 @@ class ChatService:
             # Simple fallback responses
             if any(greet in cleaned_message for greet in ['hi', 'hello', 'hey']):
                 fallback_response = "Hello! I'm Sandip's AI assistant. What can I help you learn about Sandip today?"
+                audio_base64 = self.text_to_speech_base64("Hello! I'm Sandip's AI assistant. What can I help you learn about Sandip today?")
             elif any(word in cleaned_message for word in ['github']):
-                fallback_response = "You can find my GitHub profile at: github.com/sandipbaste"
+                fallback_response = "You can find my GitHub profile at: github.com/sandipbaste\nWould you like me to open it for you?"
+                audio_base64 = self.text_to_speech_base64("You can find my GitHub profile at github.com/sandipbaste")
             elif any(word in cleaned_message for word in ['email']):
                 fallback_response = "You can reach me at: sandipbaste999@gmail.com"
+                audio_base64 = self.text_to_speech_base64("You can reach me at sandipbaste999@gmail.com")
             elif any(word in cleaned_message for word in ['project']):
                 fallback_response = "I have worked on AI projects including WhatsApp Chatbot, Voice Assistant Nora, and Video Insight Extractor."
+                audio_base64 = self.text_to_speech_base64("I have worked on AI projects including WhatsApp chatbot, voice assistant, and video insight extractor.")
             elif any(word in cleaned_message for word in ['skill']):
                 fallback_response = "My skills include Python, Generative AI, LLMs, LangChain, FastAPI, and various AI technologies."
+                audio_base64 = self.text_to_speech_base64("My skills include Python, Generative AI, and various AI technologies.")
             else:
                 fallback_response = "I'm here to help you learn about Sandip's professional background. Ask about skills, projects, experience, or contact information."
+                audio_base64 = self.text_to_speech_base64("I'm here to help you learn about Sandip's professional background.")
             
             return {
                 "response": fallback_response,
+                "audio": audio_base64,
                 "session_id": session_id,
                 "sources": ["system_fallback"]
             }
