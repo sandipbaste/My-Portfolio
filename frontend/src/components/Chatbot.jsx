@@ -10,6 +10,7 @@ const Chatbot = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isVoiceProcessing, setIsVoiceProcessing] = useState(false);
   const messagesEndRef = useRef(null);
   const autoCloseTimerRef = useRef(null);
   const autoOpenTimerRef = useRef(null);
@@ -69,7 +70,7 @@ const Chatbot = () => {
       // Auto-send message after voice input WITH voice enabled
       setTimeout(() => {
         sendMessage(transcript, true); // true means use voice
-      }, 500);
+      }, 300);
     };
 
     recognitionRef.current.onerror = (event) => {
@@ -109,47 +110,96 @@ const Chatbot = () => {
     };
   };
 
-  // Add audio playback function
-  const playAudio = (audioBase64) => {
+  // Optimized audio playback function
+  const playAudio = async (audioBase64) => {
     try {
+      setIsVoiceProcessing(true);
+      setIsSpeaking(true);
+      
       const audio = new Audio(`data:audio/mp3;base64,${audioBase64}`);
-      audio.onplay = () => setIsSpeaking(true);
-      audio.onended = () => setIsSpeaking(false);
-      audio.onerror = () => setIsSpeaking(false);
-      audio.play().catch(e => console.error('Error playing audio:', e));
+      
+      // Preload audio for faster playback
+      audio.preload = 'auto';
+      
+      await audio.play();
+      
+      audio.onended = () => {
+        setIsSpeaking(false);
+        setIsVoiceProcessing(false);
+      };
+      
+      audio.onerror = () => {
+        console.error('Audio playback failed, falling back to TTS');
+        setIsSpeaking(false);
+        setIsVoiceProcessing(false);
+        // Fallback to browser TTS
+        if (messages.length > 0) {
+          const lastBotMessage = [...messages].reverse().find(msg => msg.sender === 'bot');
+          if (lastBotMessage) {
+            speakText(lastBotMessage.text);
+          }
+        }
+      };
+      
     } catch (error) {
       console.error('Error playing audio:', error);
       setIsSpeaking(false);
+      setIsVoiceProcessing(false);
     }
   };
 
+  // Optimized browser speech synthesis
   const speakText = (text) => {
     if ('speechSynthesis' in window) {
       // Stop any ongoing speech
       window.speechSynthesis.cancel();
 
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1.0;
+      
+      // Optimize for speed and clarity
+      utterance.rate = 1.1; // Slightly faster than normal
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
+      
+      // Try to use a faster, more natural voice
+      const voices = window.speechSynthesis.getVoices();
+      const preferredVoices = voices.filter(voice => 
+        voice.lang.includes('en') && 
+        (voice.localService || !voice.localService) // Both local and remote
+      );
+      
+      if (preferredVoices.length > 0) {
+        // Prefer voices that are known to be faster
+        const fastVoice = preferredVoices.find(voice => 
+          voice.name.includes('Google') || 
+          voice.name.includes('Samantha') ||
+          voice.name.includes('Alex')
+        ) || preferredVoices[0];
+        
+        utterance.voice = fastVoice;
+      }
 
       utterance.onstart = () => {
         setIsSpeaking(true);
+        setIsVoiceProcessing(false);
       };
 
       utterance.onend = () => {
         setIsSpeaking(false);
+        setIsVoiceProcessing(false);
       };
 
       utterance.onerror = (event) => {
         console.error('🔊 Speech synthesis error:', event);
         setIsSpeaking(false);
+        setIsVoiceProcessing(false);
       };
 
       speechSynthesisRef.current = utterance;
       window.speechSynthesis.speak(utterance);
     } else {
       console.warn('🔊 Speech synthesis not supported in this browser');
+      setIsVoiceProcessing(false);
     }
   };
 
@@ -161,8 +211,7 @@ const Chatbot = () => {
 
     try {
       recognitionRef.current.start();
-      // Speak welcome message when mic starts
-      speakText("This is Sandip AI Assistance. Start asking any question with me.");
+      // Removed the welcome message to reduce initial delay
     } catch (error) {
       console.error('🎤 Error starting voice recognition:', error);
     }
@@ -220,13 +269,13 @@ const Chatbot = () => {
         if (messages.length === 0) {
           setIsOpen(false);
         }
-      }, 10000);
+      }, 20000);
     }
 
     return () => clearTimeout(autoCloseTimerRef.current);
   }, [isOpen, messages]);
 
-  // Updated sendMessage function with use_voice parameter
+  // Optimized sendMessage function
   const sendMessage = async (text = null, useVoice = false) => {
     const messageToSend = text || inputMessage;
     if (!messageToSend.trim() || isLoading) return;
@@ -240,6 +289,10 @@ const Chatbot = () => {
     if (!text) setInputMessage('');
     setIsLoading(true);
 
+    if (useVoice) {
+      setIsVoiceProcessing(true);
+    }
+
     try {
       // Pass useVoice parameter to API
       const response = await chatAPI.sendMessage(messageToSend, sessionId, useVoice);
@@ -251,20 +304,25 @@ const Chatbot = () => {
       };
       setMessages(prev => [...prev, botMessage]);
 
-      // Auto-speak bot responses only if voice was used
+      // Handle voice responses with priority to browser TTS
       if (useVoice) {
-        if (response.audio) {
-          // Use GTTS audio from backend
-          playAudio(response.audio);
-        } else if (response.response) {
-          // Fallback to browser speech synthesis
+        // Use browser TTS immediately for instant response
+        if (response.response) {
           speakText(response.response);
+        }
+        
+        // If backend provides audio, use it as enhanced option (but don't wait)
+        if (response.audio) {
+          // Play backend audio in background, but don't block UI
+          playAudio(response.audio).catch(error => {
+            console.log('Backend audio playback optional');
+          });
         }
       }
     } catch (error) {
       console.error('Chat error:', error);
       const errorMessage = { 
-        text: "Sorry, I'm having trouble responding right now. Please make sure your internet connection is working well.", 
+        text: "Sorry, I'm having trouble responding right now. Please try again.", 
         sender: 'bot',
         timestamp: getCurrentTime()
       };
@@ -443,7 +501,6 @@ const Chatbot = () => {
                           whileTap={{ scale: 0.98 }}
                           onClick={() => {
                             setInputMessage(question);
-                            // For quick questions, send without voice by default
                             setTimeout(() => sendMessage(question, false), 100);
                           }}
                           className="text-xs text-gray-800 bg-white border border-gray-300 rounded-lg px-3 py-2 hover:border-blue-500 hover:bg-blue-500 hover:text-white transition-colors block w-full text-left"
@@ -588,18 +645,18 @@ const Chatbot = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={toggleListening}
-                  disabled={isLoading}
+                  disabled={isLoading || isVoiceProcessing}
                   className={`p-3 rounded-xl transition-all duration-200 flex items-center justify-center shadow-lg ${
                     isListening 
                       ? 'bg-red-500 text-white hover:bg-red-600 animate-pulse' 
-                      : isSpeaking
+                      : isSpeaking || isVoiceProcessing
                       ? 'bg-green-500 text-white hover:bg-green-600'
                       : 'bg-white text-gray-800 hover:bg-gray-800 hover:text-white'
                   } disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {isListening ? (
                     <MicOff size={20} />
-                  ) : isSpeaking ? (
+                  ) : isSpeaking || isVoiceProcessing ? (
                     <Volume2 size={20} />
                   ) : (
                     <Mic size={20} />
@@ -612,7 +669,7 @@ const Chatbot = () => {
                     scale: inputMessage.trim() && !isLoading ? 1.05 : 1,
                   }}
                   whileTap={{ scale: inputMessage.trim() && !isLoading ? 0.95 : 1 }}
-                  onClick={() => sendMessage()} // Default: no voice for text input
+                  onClick={() => sendMessage()}
                   disabled={isLoading || !inputMessage.trim()}
                   className="bg-white text-gray-800 p-3 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg hover:bg-gray-800 hover:text-white"
                 >
@@ -621,7 +678,7 @@ const Chatbot = () => {
               </div>
 
               {/* Voice Status Indicator */}
-              {(isListening || isSpeaking) && (
+              {(isListening || isSpeaking || isVoiceProcessing) && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
@@ -637,6 +694,15 @@ const Chatbot = () => {
                           className="w-2 h-2 bg-red-500 rounded-full"
                         />
                         <span>Listening... Speak now</span>
+                      </>
+                    ) : isVoiceProcessing ? (
+                      <>
+                        <motion.div
+                          animate={{ scale: [1, 1.3, 1] }}
+                          transition={{ duration: 0.6, repeat: Infinity }}
+                          className="w-2 h-2 bg-blue-500 rounded-full"
+                        />
+                        <span>Preparing voice response...</span>
                       </>
                     ) : isSpeaking ? (
                       <>
