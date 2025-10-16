@@ -66,9 +66,9 @@ const Chatbot = () => {
       setInputMessage(transcript);
       setIsListening(false);
       
-      // Auto-send message after voice input
+      // Auto-send message after voice input WITH voice enabled
       setTimeout(() => {
-        sendMessage(transcript);
+        sendMessage(transcript, true); // true means use voice
       }, 500);
     };
 
@@ -107,6 +107,20 @@ const Chatbot = () => {
       console.log('🎤 Voice recognition ended');
       setIsListening(false);
     };
+  };
+
+  // Add audio playback function
+  const playAudio = (audioBase64) => {
+    try {
+      const audio = new Audio(`data:audio/mp3;base64,${audioBase64}`);
+      audio.onplay = () => setIsSpeaking(true);
+      audio.onended = () => setIsSpeaking(false);
+      audio.onerror = () => setIsSpeaking(false);
+      audio.play().catch(e => console.error('Error playing audio:', e));
+    } catch (error) {
+      console.error('Error playing audio:', error);
+      setIsSpeaking(false);
+    }
   };
 
   const speakText = (text) => {
@@ -212,7 +226,8 @@ const Chatbot = () => {
     return () => clearTimeout(autoCloseTimerRef.current);
   }, [isOpen, messages]);
 
-  const sendMessage = async (text = null) => {
+  // Updated sendMessage function with use_voice parameter
+  const sendMessage = async (text = null, useVoice = false) => {
     const messageToSend = text || inputMessage;
     if (!messageToSend.trim() || isLoading) return;
 
@@ -226,7 +241,8 @@ const Chatbot = () => {
     setIsLoading(true);
 
     try {
-      const response = await chatAPI.sendMessage(messageToSend, sessionId);
+      // Pass useVoice parameter to API
+      const response = await chatAPI.sendMessage(messageToSend, sessionId, useVoice);
       
       const botMessage = { 
         text: response.response, 
@@ -235,9 +251,15 @@ const Chatbot = () => {
       };
       setMessages(prev => [...prev, botMessage]);
 
-      // Auto-speak bot responses using GTTS (browser's speech synthesis)
-      if (response.response) {
-        speakText(response.response);
+      // Auto-speak bot responses only if voice was used
+      if (useVoice) {
+        if (response.audio) {
+          // Use GTTS audio from backend
+          playAudio(response.audio);
+        } else if (response.response) {
+          // Fallback to browser speech synthesis
+          speakText(response.response);
+        }
       }
     } catch (error) {
       console.error('Chat error:', error);
@@ -255,7 +277,7 @@ const Chatbot = () => {
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      sendMessage(); // Default: no voice for text input
     }
   };
 
@@ -419,7 +441,11 @@ const Chatbot = () => {
                           transition={{ delay: 0.6 + index * 0.1 }}
                           whileHover={{ x: 5, scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          onClick={() => setInputMessage(question)}
+                          onClick={() => {
+                            setInputMessage(question);
+                            // For quick questions, send without voice by default
+                            setTimeout(() => sendMessage(question, false), 100);
+                          }}
                           className="text-xs text-gray-800 bg-white border border-gray-300 rounded-lg px-3 py-2 hover:border-blue-500 hover:bg-blue-500 hover:text-white transition-colors block w-full text-left"
                         >
                           "{question}"
@@ -586,7 +612,7 @@ const Chatbot = () => {
                     scale: inputMessage.trim() && !isLoading ? 1.05 : 1,
                   }}
                   whileTap={{ scale: inputMessage.trim() && !isLoading ? 0.95 : 1 }}
-                  onClick={() => sendMessage()}
+                  onClick={() => sendMessage()} // Default: no voice for text input
                   disabled={isLoading || !inputMessage.trim()}
                   className="bg-white text-gray-800 p-3 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg hover:bg-gray-800 hover:text-white"
                 >

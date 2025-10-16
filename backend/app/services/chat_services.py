@@ -14,6 +14,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 import base64
 from gtts import gTTS
 import io
+import time
 
 class ChatService:
     def __init__(self):
@@ -53,28 +54,30 @@ class ChatService:
 
     def text_to_speech_base64(self, text: str) -> str:
         """Convert text to speech using gTTS and return base64 audio"""
-        try:
-            # Clean text for speech
-            clean_text = re.sub(r'[^\w\s.,!?;:()\-@#&+*%/]', '', text)
-            clean_text = clean_text[:500]  # Limit text length for gTTS
+        while True: 
+            try:
+                time.sleep(10000)
+                # Clean text for speech
+                clean_text = re.sub(r'[^\w\s.,!?;:()\-@#&+*%/]', '', text)
+                clean_text = clean_text[:500]  # Limit text length for gTTS
+                
+                # Create gTTS object
+                tts = gTTS(text=clean_text, lang='en', slow=False)
+                
+                # Save to bytes buffer
+                audio_buffer = io.BytesIO()
+                tts.write_to_fp(audio_buffer)
+                audio_buffer.seek(0)
+                
+                # Convert to base64
+                audio_base64 = base64.b64encode(audio_buffer.read()).decode('utf-8')
+                
+                print("✅ Text converted to speech successfully")
+                return audio_base64
             
-            # Create gTTS object
-            tts = gTTS(text=clean_text, lang='en', slow=False)
-            
-            # Save to bytes buffer
-            audio_buffer = io.BytesIO()
-            tts.write_to_fp(audio_buffer)
-            audio_buffer.seek(0)
-            
-            # Convert to base64
-            audio_base64 = base64.b64encode(audio_buffer.read()).decode('utf-8')
-            
-            print("✅ Text converted to speech successfully")
-            return audio_base64
-            
-        except Exception as e:
-            print(f"❌ Error converting text to speech: {e}")
-            return ""
+            except Exception as e:
+                print(f"❌ Error converting text to speech: {e}")
+                return ""
 
     def clean_text(self, text: str) -> str:
         """Clean and preprocess text"""
@@ -84,14 +87,40 @@ class ChatService:
 
     def is_social_media_query(self, query: str) -> bool:
         """Check if the query is asking to open social media profiles"""
-        social_keywords = [
-            'open', 'launch', 'visit', 'go to', 'navigate to', 'show me',
-            'linkedin', 'github', 'git hub', 'instagram', 'insta', 'facebook', 
-            'fb', 'twitter', 'x', 'portfolio', 'website', 'profile'
+        query_lower = query.lower()
+        
+        # Social media platforms
+        social_platforms = ['linkedin', 'github', 'instagram', 'facebook', 'twitter', 'portfolio', 'website']
+        
+        # Action words that indicate opening/visiting
+        action_words = ['open', 'launch', 'visit', 'go to', 'navigate to', 'show me']
+        
+        # Direct requests for profiles
+        direct_requests = [
+            'your linkedin', 'your github', 'your instagram', 'your facebook', 
+            'your twitter', 'your portfolio', 'your website',
+            'linkedin profile', 'github profile', 'instagram profile',
+            'facebook profile', 'twitter profile'
         ]
         
-        query_lower = query.lower()
-        return any(keyword in query_lower for keyword in social_keywords)
+        # Check for explicit social media requests
+        has_action_and_platform = any(action in query_lower for action in action_words) and \
+                                 any(platform in query_lower for platform in social_platforms)
+        
+        has_direct_request = any(request in query_lower for request in direct_requests)
+        
+        # Check for platform-specific commands
+        platform_commands = [
+            'open linkedin', 'open github', 'open instagram', 'open facebook', 'open twitter',
+            'visit linkedin', 'visit github', 'visit instagram', 'visit facebook', 'visit twitter',
+            'go to linkedin', 'go to github', 'go to instagram', 'go to facebook', 'go to twitter',
+            'show me linkedin', 'show me github', 'show me instagram', 'show me facebook', 'show me twitter'
+        ]
+        
+        has_platform_command = any(command in query_lower for command in platform_commands)
+        
+        # Only return True for explicit social media requests
+        return has_action_and_platform or has_direct_request or has_platform_command
 
     def handle_social_media_request(self, query: str) -> Dict[str, Any]:
         """Handle social media profile opening requests"""
@@ -459,10 +488,17 @@ class ChatService:
             'sandip', 'baste', 'resume', 'cv', 'experience', 
             'skills', 'projects', 'education', 'work', 'job',
             'background', 'developer', 'engineer', 'ml', 'ai', 'python',
-            'contact', 'email', 'github', 'phone', 'number', 'summary', 'about'
+            'contact', 'email', 'github', 'phone', 'number', 'summary', 'about',
+            'what is', 'tell me about', 'can you', 'could you', 'explain',
+            'describe', 'how', 'what are', 'where', 'when'
         ]
         
         query_lower = query.lower()
+        
+        # Exclude social media queries first
+        if self.is_social_media_query(query):
+            return False
+            
         return any(keyword in query_lower for keyword in resume_keywords)
 
     async def get_general_knowledge_response(self, query: str) -> str:
@@ -543,28 +579,29 @@ class ChatService:
         else:
             return "I have experience working on AI projects including chatbots, voice assistants, and video analysis systems."
 
-    async def get_response(self, message: str, session_id: str = None) -> Dict[str, Any]:
+    async def get_response(self, message: str, session_id: str = None, use_voice: bool = False) -> Dict[str, Any]:
         if not session_id:
             session_id = str(uuid.uuid4())
 
         try:
             print(f"💬 Processing query: '{message}'")
+            print(f"🎤 Voice input: {use_voice}")
             
             cleaned_message = message.strip().lower()
             
             # Handle greetings
             if cleaned_message in ['hi', 'hello', 'hey']:
                 response_text = "Hello! I'm Sandip's AI assistant. What can I help you learn about Sandip today?"
-                audio_base64 = self.text_to_speech_base64("Hello! I'm Sandip's AI assistant. What can I help you learn about Sandip today?")
+                audio_base64 = self.text_to_speech_base64(response_text) if use_voice else ""
                 sources = ["greeting"]
                 
-            # Handle social media requests
+            # Handle social media requests - ONLY if explicitly requested
             elif self.is_social_media_query(cleaned_message):
                 print("🔗 Handling social media request...")
                 result = self.handle_social_media_request(message)
                 return {
                     "response": result["response"],
-                    "audio": result.get("audio", ""),
+                    "audio": result.get("audio", "") if use_voice else "",
                     "session_id": session_id,
                     "sources": result["sources"],
                     "action": result.get("action"),
@@ -572,7 +609,7 @@ class ChatService:
                     "platform": result.get("platform")
                 }
                 
-            # Handle resume-related queries
+            # Handle resume-related queries (this should catch "explain his experience")
             elif self.is_resume_related_query(cleaned_message):
                 print("🔍 Searching in resume...")
                 context, sources = self.search_in_resume(message)
@@ -581,54 +618,54 @@ class ChatService:
                     # Direct responses for specific queries without LLM
                     if any(word in cleaned_message for word in ['github', 'git']):
                         response_text = "You can find my GitHub profile at: github.com/sandipbaste\nWould you like me to open it for you?"
-                        audio_base64 = self.text_to_speech_base64("You can find my GitHub profile at github.com/sandipbaste. Would you like me to open it for you?")
+                        audio_base64 = self.text_to_speech_base64(response_text) if use_voice else ""
                     
                     elif any(word in cleaned_message for word in ['email']):
                         response_text = "You can reach me at: sandipbaste999@gmail.com"
-                        audio_base64 = self.text_to_speech_base64("You can reach me at sandipbaste999@gmail.com")
+                        audio_base64 = self.text_to_speech_base64(response_text) if use_voice else ""
                     
                     elif any(word in cleaned_message for word in ['phone', 'number', 'contact']):
                         if 'email' not in cleaned_message:
                             response_text = "My contact number is: +91 9767952471"
-                            audio_base64 = self.text_to_speech_base64("My contact number is plus ninety one ninety seven sixty seven ninety five twenty four seventy one")
+                            audio_base64 = self.text_to_speech_base64("My contact number is plus ninety one ninety seven sixty seven ninety five twenty four seventy one") if use_voice else ""
                         else:
                             response_text = "My contact information:\nEmail: sandipbaste999@gmail.com\nPhone: +91 9767952471\nGitHub: github.com/sandipbaste\nLinkedIn: linkedin.com/in/sandipbaste999"
-                            audio_base64 = self.text_to_speech_base64("My contact information includes email, phone, GitHub, and LinkedIn profiles.")
+                            audio_base64 = self.text_to_speech_base64("My contact information includes email, phone, GitHub, and LinkedIn profiles.") if use_voice else ""
                     
                     elif any(word in cleaned_message for word in ['project']):
                         response_text = self.format_projects_response(context)
-                        audio_base64 = self.text_to_speech_base64("I have worked on several AI projects including WhatsApp chatbot, voice assistant, and video insight extractor.")
+                        audio_base64 = self.text_to_speech_base64("I have worked on several AI projects including WhatsApp chatbot, voice assistant, and video insight extractor.") if use_voice else ""
                     
                     elif any(word in cleaned_message for word in ['skill']):
                         response_text = self.extract_skills_response(context)
-                        audio_base64 = self.text_to_speech_base64("My skills include Python, Generative AI, Large Language Models, and various AI frameworks.")
+                        audio_base64 = self.text_to_speech_base64("My skills include Python, Generative AI, Large Language Models, and various AI frameworks.") if use_voice else ""
                     
-                    elif any(word in cleaned_message for word in ['experience']):
+                    elif any(word in cleaned_message for word in ['experience', 'work', 'job', 'career']):
                         response_text = self.extract_experience_response(context)
-                        audio_base64 = self.text_to_speech_base64("I worked as an AI/ML Developer Intern at Application Square Infotech, where I developed chatbot and voicebot applications.")
+                        audio_base64 = self.text_to_speech_base64("I worked as an AI/ML Developer Intern at Application Square Infotech, where I developed chatbot and voicebot applications.") if use_voice else ""
                     
                     elif any(word in cleaned_message for word in ['education']):
                         response_text = self.extract_education_response(context)
-                        audio_base64 = self.text_to_speech_base64("I'm pursuing Master's in Computer Science with a CGPA of seven point nine one, and completed Bachelor's with eight point two seven CGPA.")
+                        audio_base64 = self.text_to_speech_base64("I'm pursuing Master's in Computer Science with a CGPA of seven point nine one, and completed Bachelor's with eight point two seven CGPA.") if use_voice else ""
                     
                     elif any(word in cleaned_message for word in ['summary', 'about', 'who is']):
                         response_text = self.extract_summary_response(context)
-                        audio_base64 = self.text_to_speech_base64("I'm Sandip Baste, an AI/ML Developer specializing in Generative AI and Large Language Models. I build intelligent AI solutions.")
+                        audio_base64 = self.text_to_speech_base64("I'm Sandip Baste, an AI/ML Developer specializing in Generative AI and Large Language Models. I build intelligent AI solutions.") if use_voice else ""
                     
                     else:
-                        # Use LLM for other queries
+                        # Use LLM for other queries like "explain his experience"
                         response_text = await self.get_llm_response(context, message)
-                        audio_base64 = self.text_to_speech_base64(response_text)
+                        audio_base64 = self.text_to_speech_base64(response_text) if use_voice else ""
                 else:
                     response_text = "I couldn't find specific information about that in my resume. Please ask about my skills, projects, experience, education, or contact information."
-                    audio_base64 = self.text_to_speech_base64("I couldn't find specific information about that. Please ask about my skills, projects, or experience.")
+                    audio_base64 = self.text_to_speech_base64("I couldn't find specific information about that. Please ask about my skills, projects, or experience.") if use_voice else ""
                     sources = ["resume_not_found"]
             
             # Handle general knowledge questions
             else:
                 print("🌍 Handling general knowledge question...")
                 response_text = await self.get_general_knowledge_response(message)
-                audio_base64 = self.text_to_speech_base64(response_text)
+                audio_base64 = self.text_to_speech_base64(response_text) if use_voice else ""
                 sources = ["general_knowledge"]
             
             print(f"🤖 Generated response: {response_text}")
@@ -647,22 +684,25 @@ class ChatService:
             # Simple fallback responses
             if any(greet in cleaned_message for greet in ['hi', 'hello', 'hey']):
                 fallback_response = "Hello! I'm Sandip's AI assistant. What can I help you learn about Sandip today?"
-                audio_base64 = self.text_to_speech_base64("Hello! I'm Sandip's AI assistant. What can I help you learn about Sandip today?")
+                audio_base64 = self.text_to_speech_base64(fallback_response) if use_voice else ""
             elif any(word in cleaned_message for word in ['github']):
                 fallback_response = "You can find my GitHub profile at: github.com/sandipbaste\nWould you like me to open it for you?"
-                audio_base64 = self.text_to_speech_base64("You can find my GitHub profile at github.com/sandipbaste")
+                audio_base64 = self.text_to_speech_base64("You can find my GitHub profile at github.com/sandipbaste") if use_voice else ""
             elif any(word in cleaned_message for word in ['email']):
                 fallback_response = "You can reach me at: sandipbaste999@gmail.com"
-                audio_base64 = self.text_to_speech_base64("You can reach me at sandipbaste999@gmail.com")
+                audio_base64 = self.text_to_speech_base64("You can reach me at sandipbaste999@gmail.com") if use_voice else ""
             elif any(word in cleaned_message for word in ['project']):
                 fallback_response = "I have worked on AI projects including WhatsApp Chatbot, Voice Assistant Nora, and Video Insight Extractor."
-                audio_base64 = self.text_to_speech_base64("I have worked on AI projects including WhatsApp chatbot, voice assistant, and video insight extractor.")
+                audio_base64 = self.text_to_speech_base64("I have worked on AI projects including WhatsApp chatbot, voice assistant, and video insight extractor.") if use_voice else ""
             elif any(word in cleaned_message for word in ['skill']):
                 fallback_response = "My skills include Python, Generative AI, LLMs, LangChain, FastAPI, and various AI technologies."
-                audio_base64 = self.text_to_speech_base64("My skills include Python, Generative AI, and various AI technologies.")
+                audio_base64 = self.text_to_speech_base64("My skills include Python, Generative AI, and various AI technologies.") if use_voice else ""
+            elif any(word in cleaned_message for word in ['experience']):
+                fallback_response = "I worked as an AI/ML Developer Intern at Application Square Infotech, where I developed chatbot and voicebot applications."
+                audio_base64 = self.text_to_speech_base64("I worked as an AI/ML Developer Intern at Application Square Infotech.") if use_voice else ""
             else:
                 fallback_response = "I'm here to help you learn about Sandip's professional background. Ask about skills, projects, experience, or contact information."
-                audio_base64 = self.text_to_speech_base64("I'm here to help you learn about Sandip's professional background.")
+                audio_base64 = self.text_to_speech_base64("I'm here to help you learn about Sandip's professional background.") if use_voice else ""
             
             return {
                 "response": fallback_response,
