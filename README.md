@@ -88,6 +88,20 @@ npm install
 npm start
 ```
 
+# Demo
+
+https://github.com/user-attachments/assets/475ecc21-0e1b-4585-8674-65c0509d2210
+<img width="1864" height="834" alt="Screenshot 2025-10-29 123925" src="https://github.com/user-attachments/assets/46feea57-61b0-419a-8e39-4e2da280c26d" />
+<img width="1880" height="827" alt="Screenshot 2025-10-29 123907" src="https://github.com/user-attachments/assets/0528b9a5-0880-4eb1-b2f6-b5bbe5c4f867" />
+<img width="1726" height="822" alt="Screenshot 2025-10-29 123843" src="https://github.com/user-attachments/assets/048c02b3-e871-48f4-b0e2-e973c95ea016" />
+<img width="1897" height="826" alt="Screenshot 2025-10-29 123824" src="https://github.com/user-attachments/assets/cd1b321d-aee8-4ec0-969f-0f2ef5dd3aa7" />
+<img width="1899" height="830" alt="Screenshot 2025-10-29 123809" src="https://github.com/user-attachments/assets/d619202e-d362-4b90-98ee-a4a451ca43d5" />
+<img width="1893" height="828" alt="Screenshot 2025-10-29 123755" src="https://github.com/user-attachments/assets/bcb90160-b4cd-442b-8f35-aada36e2e304" />
+<img width="1891" height="822" alt="Screenshot 2025-10-29 123735" src="https://github.com/user-attachments/assets/49af1f12-6149-467b-a16a-e25b416f872c" />
+<img width="1900" height="828" alt="Screenshot 2025-10-29 123719" src="https://github.com/user-attachments/assets/a3e201f1-0213-4665-bb83-4779e2b4e2c6" />
+<img width="1896" height="853" alt="Screenshot 2025-10-29 123605" src="https://github.com/user-attachments/assets/ff208ed8-9921-419d-bea4-9b3b1847041c" />
+
 ## 🌟 Show Your Support
 
 If you like this project, give a ⭐ on GitHub!
+
